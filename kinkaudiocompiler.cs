@@ -204,6 +204,32 @@ namespace kinkaudio
             LexDict dictionary = new LexDict(envMacros, envMacrosValues,
             wavMacros, wavMacrosValues);
             GetMusicBlock(inputFile, dictionary, out commands);
+            envInfo = new List<ChanEnv>();
+            for ( int i = 0; i < dictionary.envnames.Count; i++ )
+            {
+                List<float> newEnvValues = new List<float>();
+                foreach ( var value in dictionary.envalues[i].Split(
+                    new [] { ' ' }) )
+                {
+                    newEnvValues.Add(Convert.ToSingle(value));
+                }
+                ChanEnv newEnvInfo = new ChanEnv(dictionary.envnames[i], 
+                newEnvValues);
+                envInfo.Add(newEnvInfo);
+            }
+            wavInfo = new List<ChanWav>();
+            for ( int i = 0; i < dictionary.wavnames.Count; i++ )
+            {
+                List<float> newWavValues = new List<float>();
+                foreach ( var value in dictionary.wavalues[i].Split(
+                    new [] { ' ' }) )
+                {
+                    newWavValues.Add(Convert.ToSingle(value));
+                }
+                ChanWav newWavInfo = new ChanWav(dictionary.wavnames[i], 
+                newWavValues);
+                wavInfo.Add(newWavInfo);
+            }
         }
     }
     public struct ChanEnv
