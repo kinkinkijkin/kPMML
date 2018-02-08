@@ -17,22 +17,24 @@ namespace kinkaudio
         public readonly string[] commandqualities = new string[7] { "pitchEnv", 
         "pitchVibrato", "octaveSet", "vibSpeed", "vibAmplitude", "loopStart",
         "loopEnd" };
+        public readonly char[] integers = new char[10] { '1', '2', '3', '4', '5',
+        '6', '7', '8', '9', '0' };
         public List<string> envnames { get; set; }
         public List<string> envalues { get; set; }
         public List<string> wavnames { get; set; }
         public List<string> wavalues { get; set; }
-        public LexDict (List<string> field1, List<string>field2,
-        List<string> field3, List<string> field4)
+        public LexDict (List<string> envNames, List<string> envValues, 
+        List<string> wavNames, List<string> wavValues)
         {
-            envnames = field1;
-            envalues = field2;
-            wavnames = field3;
-            wavalues = field4;
+            envnames = envNames;
+            envalues = envValues;
+            wavnames = wavNames;
+            wavalues = wavValues;
         }
     }
     public class Compiler
     {
-        public static List<string> StripComments ( List<string> inputList )
+        static List<string> StripComments ( List<string> inputList )
         {
             var inputListCopy = inputList;
             foreach ( var line in inputList )
@@ -45,7 +47,7 @@ namespace kinkaudio
             return inputListCopy;
         }
 
-        private void GetMacroBlock ( List<string> inputList, string[] blocks, 
+        static void GetMacroBlock ( List<string> inputList, string[] blocks, 
         out List<string> outputNames, out List<string> outputValues )
         {
             bool currentBlock = false;
@@ -73,7 +75,7 @@ namespace kinkaudio
                 }
             }
         }
-        private void GetMusicBlock ( List<string> inputList, 
+        static void GetMusicBlock ( List<string> inputList, 
         LexDict dictionary, out List<List<string>> musicCommands)
         {
             bool currentBlock = false;
@@ -106,10 +108,8 @@ namespace kinkaudio
                             {
                                 if ( command.Contains(dictionary.notenames[i]) )
                                 {
-                                    string newCommand = ( dictionary.notevalues[i]
-                                    + " "
-                                    + command.TrimStart('>').TrimStart(
-                                        dictionary.notenames[i].ToCharArray()) );
+                                    string newCommand = ( 
+                                        Convert.ToString(dictionary.notevalues[i]) );
                                     if ( !command.Contains(">") )
                                     {
                                         currentCommand.Add("retrig " + newCommand);
@@ -151,8 +151,8 @@ namespace kinkaudio
                             {
                                 if ( command.Equals(dictionary.envnames[i]) )
                                 {
-                                    string newCommand = "envSet"
-                                    + dictionary.envalues[i];
+                                    string newCommand = "envSet "
+                                    + dictionary.envnames[i];
                                     currentCommand.Add(newCommand);
                                 }
                             }
@@ -160,8 +160,8 @@ namespace kinkaudio
                             {
                                 if ( command.Equals(dictionary.wavnames[i]) )
                                 {
-                                    string newCommand = "wavSet"
-                                    + dictionary.wavalues[i];
+                                    string newCommand = "wavSet "
+                                    + dictionary.wavnames[i];
                                     currentCommand.Add(newCommand);
                                 }
                             }
@@ -172,7 +172,7 @@ namespace kinkaudio
             }
             musicCommands[0].Add("{totalChannels}");
         }
-        private string SetMetadata ( List<string> inputList, string metadataName )
+        static string SetMetadata ( List<string> inputList, string metadataName )
         {
             foreach ( var line in inputList )
             {
@@ -184,12 +184,46 @@ namespace kinkaudio
             }
             return "empty";
         }
-        public static void Compile ( string inputFileName, )
+        public static void Compile ( string inputFileName, out List<ChanEnv> envInfo,
+        out List<ChanWav> wavInfo, out List<List<string>> commands,
+        out string metadata)
+        {
+            List<string> inputFile = new List<string>(
+                File.ReadAllLines(inputFileName));
+            inputFile = StripComments(inputFile);
+            metadata = ( SetMetadata(inputFile, "artist=") + " - " 
+            + SetMetadata(inputFile, "name=") );
+            List<string> envMacros;
+            List<string> envMacrosValues;
+            List<string> wavMacros;
+            List<string> wavMacrosValues;
+            GetMacroBlock(inputFile, new [] { "/env", "/wav" }, out envMacros,
+            out envMacrosValues);
+            GetMacroBlock(inputFile, new [] { "/wav", "/mu" }, out wavMacros,
+            out wavMacrosValues);
+            LexDict dictionary = new LexDict(envMacros, envMacrosValues,
+            wavMacros, wavMacrosValues);
+            GetMusicBlock(inputFile, dictionary, out commands);
+        }
     }
     public struct ChanEnv
     {
         public string envName { get; set; }
         public List<float> envValues { get; set; }
-        public ChanEnv ( )
+        public ChanEnv ( string envname, List<float> envvalues)
+        {
+            envName = envname;
+            envValues = envvalues;
+        }
+    }
+    public struct ChanWav
+    {
+        public string wavName { get; set; }
+        public List<float> wavValues { get; set; }
+        public ChanWav ( string wavname, List<float> wavvalues )
+        {
+            wavName = wavname;
+            wavValues = wavvalues;
+        }
     }
 }

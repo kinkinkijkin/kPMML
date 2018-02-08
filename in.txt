@@ -1,3 +1,4 @@
+#example input file
 name=baguette
 artist=kinkinkijkin
 60hz
