@@ -1,8 +1,6 @@
-#name
-baguette
-#artist
-kinkinkijkin
-60
+name=baguette
+artist=kinkinkijkin
+60hz
 /env
 # env  a  h  d  s
 henry AHDS 5000 50000 100000 100

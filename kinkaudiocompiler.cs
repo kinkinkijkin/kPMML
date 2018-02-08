@@ -30,7 +30,7 @@ namespace kinkaudio
             wavalues = field4;
         }
     }
-    public class Lexer
+    public class Compiler
     {
         public static List<string> StripComments ( List<string> inputList )
         {
@@ -172,5 +172,24 @@ namespace kinkaudio
             }
             musicCommands[0].Add("{totalChannels}");
         }
+        private string SetMetadata ( List<string> inputList, string metadataName )
+        {
+            foreach ( var line in inputList )
+            {
+                if ( line.Contains(metadataName) )
+                {
+                    return line.TrimStart(metadataName.ToCharArray());
+                }
+                else {}
+            }
+            return "empty";
+        }
+        public static void Compile ( string inputFileName, )
+    }
+    public struct ChanEnv
+    {
+        public string envName { get; set; }
+        public List<float> envValues { get; set; }
+        public ChanEnv ( )
     }
 }
