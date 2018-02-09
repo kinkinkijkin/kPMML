@@ -40,7 +40,8 @@ namespace kinkaudio
     {
         static List<string> StripComments ( List<string> inputList )
         {
-            var inputListCopy = inputList;
+            List<string> inputListCopy = new List<string>();
+            inputListCopy.AddRange(inputList);
             foreach ( var line in inputList )
             {
                 if ( line.StartsWith("#") )
@@ -89,6 +90,7 @@ namespace kinkaudio
             bool currentBlock = false;
             List<string> currentCommand = new List<string>();
             musicCommands = new List<List<string>>();
+            musicCommands.Add(new List<string>());
             int channel = 0;
             int totalChannels = 0;
             foreach ( var line in inputList )
@@ -106,9 +108,13 @@ namespace kinkaudio
                         string[] currentLine = line.Split(new [] { ' ' });
                         if ( currentLine[0].Contains("c") )
                         {
-                            channel = Convert.ToInt16(
+                            channel = Convert.ToInt32(
                                 currentLine[0].TrimStart(new []{ 'c' }));
-                            if ( channel > totalChannels ) totalChannels = channel;
+                            if ( channel > totalChannels ) 
+                            {
+                                totalChannels = channel;
+                                musicCommands.Add(new List<string>());
+                            }
                         }
                         bool loop = false;
                         List<string> loopRange = new List<string>();
@@ -124,7 +130,7 @@ namespace kinkaudio
                                     {
                                         currentCommand.Add("retrig " + newCommand);
                                         for ( int r = 1;
-                                        r < Convert.ToInt16(command.TrimStart(
+                                        r < Convert.ToInt32(command.TrimStart(
                                         dictionary.notenames[i].ToCharArray())); r++ )
                                         {
                                             currentCommand.Add("noRetrig " 
@@ -134,7 +140,7 @@ namespace kinkaudio
                                     else
                                     {
                                         for ( int r = 0;
-                                        r < Convert.ToInt16(
+                                        r < Convert.ToInt32(
                                             command.TrimStart('>').TrimStart(
                                         dictionary.notenames[i].ToCharArray())); r++ )
                                         {
@@ -197,7 +203,7 @@ namespace kinkaudio
                     }
                 }
             }
-            musicCommands[0].Add("{totalChannels}");
+            musicCommands[0].Add(Convert.ToString(totalChannels));
         }
         static string SetMetadata ( List<string> inputList, string metadataName )
         {
@@ -251,11 +257,14 @@ namespace kinkaudio
                 {
                     newEnvValues.Add(Convert.ToSingle(value));
                 }
+                if ( newEnvValues.Count < 4 ) newEnvValues.Add(0f);
                 ChanEnv newEnvInfo = new ChanEnv(dictionary.envnames[i], 
                 dictionary.envtypes[i], newEnvValues);
                 envInfo.Add(newEnvInfo);
             }
+
             wavInfo = new List<ChanWav>();
+
             for ( int i = 0; i < dictionary.wavnames.Count; i++ )
             {
                 List<float> newWavValues = new List<float>();
@@ -264,6 +273,7 @@ namespace kinkaudio
                 {
                     newWavValues.Add(Convert.ToSingle(value));
                 }
+                if ( newWavValues.Count < 2 ) newWavValues.Add(0f);
                 ChanWav newWavInfo = new ChanWav(dictionary.wavnames[i], 
                 dictionary.wavtypes[i], newWavValues);
                 wavInfo.Add(newWavInfo);
