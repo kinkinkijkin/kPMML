@@ -7,7 +7,44 @@ namespace kinkaudiorender
 {
     public class kinkaudiorender
     {
-
+        static float RenderEnv ( string envType, float atk, float hld, float dcy,
+        float sus, int time )
+        {
+            if ( envType.Equals("AHD") )
+            {
+                return Envelopes.AHD(atk, hld, dcy, time);
+            }
+            else if ( envType.Equals("AHDS") )
+            {
+                return Envelopes.AHDS(atk, hld, dcy, sus, time);
+            }
+            else return 1f;
+        }
+        static float RenderWav ( string wavType, float per, float amp, int duty, 
+        int time )
+        {
+            if ( wavType.Equals("SAWT") )
+            {
+                return Generators.GenSawtooth(time, amp, per);
+            }
+            else if ( wavType.Equals("PULS") )
+            {
+                return Generators.GenPulse(time, amp, per, duty);
+            }
+            else if ( wavType.Equals("TRIA") )
+            {
+                return Generators.GenTriangle(time, amp, per);
+            }
+            else if ( wavType.Equals("PCYC") )
+            {
+                return Generators.GenPCycloid(time, amp, per);
+            }
+            else if ( wavType.Equals("SINE") )
+            {
+                return Generators.GenSin(time, amp, per);
+            }
+            else return 0f;
+        }
         static int Main (string[] args)
         {
             if (args.Length < 2)
@@ -21,14 +58,15 @@ namespace kinkaudiorender
                 Console.WriteLine("INVALID INPUT, QUEEFJESUS");
                 return 1;
             }
+            Compiler.Compile(args[0], out var Envelops, out var Wavcomms,
+            out var musicCommands, out string metadata, out int tickrate);
+
             int samplerate = Convert.ToInt32(args[1]);
-            if (!samplerate % tickrate == 0 )
+            if ( samplerate % tickrate != 0 )
             {
                 Console.WriteLine("BAD SAMPLERATE FOR THAT TICKRATE, BAKA");
                 return 1;
             }
-            Compiler.Compile(args[0], out var Envelopes, out var Wavcomms,
-            out var musicCommands, out string metadata, out int tickrate);
 
             Console.WriteLine(metadata + " at " + tickrate + "hz.");
 
@@ -46,6 +84,8 @@ namespace kinkaudiorender
                 float currentPitchWavAmp = 0f;
 
                 bool isLoop = false;
+
+                float pitchShift = 0f;
 
                 int channelOctave = 0;
 
@@ -82,20 +122,30 @@ namespace kinkaudiorender
                     else if ( command.Contains("retrig") )
                     {
                         channelFakeTime = 0;
-                        for ( int i = 0; i < samplerate / tickrate; i++)
+                        for ( int r = 0; r < samplerate / tickrate; r++)
                         {
                             channelFakeTime++;
                             channelTime++;
                             if (!currentPitchEnv.Equals(string.Empty))
                             {
-                                
+                                foreach ( var envelope in Envelops )
+                                {
+                                    if ( currentPitchEnv.Split(
+                                        new [] { ' ' })[1].Equals(envelope.envName) )
+                                    {
+
+                                    }
+                                }
                             }
                             if (!currentPitchWav.Equals(string.Empty))
+                            {
+
+                            }
                         }
                     }
                     else if ( command.Contains("retrig") )
                     {
-                        for ( int i = 0; i < samplerate / tickrate; i++)
+                        for ( int r = 0; r < samplerate / tickrate; r++)
                         {
                             channelFakeTime++;
                             channelTime++;
@@ -103,6 +153,7 @@ namespace kinkaudiorender
                     }
                 }
             }
+            return 0;
         }
     }
 }
