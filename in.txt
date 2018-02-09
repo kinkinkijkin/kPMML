@@ -13,5 +13,5 @@ steve AHD 50 0 20000
 3 SINE 8
 /mu the start of the music 1
 c1 p=steve 1 steve o=2 ( CN24 CN24 )8
-c2 P=3 vs=300 va=40 2 henry o=3 ( CN8 >DS8 >GN8 )8
+c2 P=3 vs=300 va=40 2 henry o=3 ( CN8 >DS8 >GN4 R4 )8
 END

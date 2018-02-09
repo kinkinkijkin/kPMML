@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,10 +7,10 @@ namespace kinkaudio
 {
     class LexDict
     {
-        public readonly string[] notenames = new string[12] { "CN", "CS", "DN", "DS",
-        "E", "FN", "FS", "GN", "GS", "AN", "AS", "B" };
-        public readonly float[] notevalues = new float[12] { 16.35f, 17.32f, 18.35f,
-        19.45f, 20.60f, 21.83f, 23.12f, 24.50f, 25.96f, 27.50f, 29.14f, 30.87f };
+        public readonly string[] notenames = new string[13] { "CN", "CS", "DN", "DS",
+        "E", "FN", "FS", "GN", "GS", "AN", "AS", "B", "R" };
+        public readonly float[] notevalues = new float[13] { 16.35f, 17.32f, 18.35f,
+        19.45f, 20.60f, 21.83f, 23.12f, 24.50f, 25.96f, 27.50f, 29.14f, 30.87f, 0f };
         public readonly string[] commandnames = new string[7] { "p=", "P=", "o=",
         "va=", "vs=", "(", ")"};
         public readonly string[] commandqualities = new string[7] { "pitchEnv", 
@@ -178,7 +177,7 @@ namespace kinkaudio
             {
                 if ( line.Contains(metadataName) )
                 {
-                    return line.TrimStart(metadataName.ToCharArray());
+                    return line.Trim(metadataName.ToCharArray());
                 }
                 else {}
             }
@@ -186,25 +185,34 @@ namespace kinkaudio
         }
         public static void Compile ( string inputFileName, out List<ChanEnv> envInfo,
         out List<ChanWav> wavInfo, out List<List<string>> commands,
-        out string metadata)
+        out string metadata, out int tickrate)
         {
             List<string> inputFile = new List<string>(
                 File.ReadAllLines(inputFileName));
             inputFile = StripComments(inputFile);
+
             metadata = ( SetMetadata(inputFile, "artist=") + " - " 
             + SetMetadata(inputFile, "name=") );
+            tickrate = Convert.ToInt32(SetMetadata(inputFile, "hz"));
+
             List<string> envMacros;
             List<string> envMacrosValues;
             List<string> wavMacros;
             List<string> wavMacrosValues;
+
             GetMacroBlock(inputFile, new [] { "/env", "/wav" }, out envMacros,
             out envMacrosValues);
+
             GetMacroBlock(inputFile, new [] { "/wav", "/mu" }, out wavMacros,
             out wavMacrosValues);
+
             LexDict dictionary = new LexDict(envMacros, envMacrosValues,
             wavMacros, wavMacrosValues);
+
             GetMusicBlock(inputFile, dictionary, out commands);
+
             envInfo = new List<ChanEnv>();
+
             for ( int i = 0; i < dictionary.envnames.Count; i++ )
             {
                 List<float> newEnvValues = new List<float>();
@@ -235,20 +243,24 @@ namespace kinkaudio
     public struct ChanEnv
     {
         public string envName { get; set; }
+        public string envType { get; set; }
         public List<float> envValues { get; set; }
-        public ChanEnv ( string envname, List<float> envvalues)
+        public ChanEnv ( string envname, string envtype, List<float> envvalues)
         {
             envName = envname;
+            envType = envtype;
             envValues = envvalues;
         }
     }
     public struct ChanWav
     {
         public string wavName { get; set; }
+        public string wavType { get; set; }
         public List<float> wavValues { get; set; }
-        public ChanWav ( string wavname, List<float> wavvalues )
+        public ChanWav ( string wavname, string wavtype, List<float> wavvalues )
         {
             wavName = wavname;
+            wavType = wavtype;
             wavValues = wavvalues;
         }
     }
