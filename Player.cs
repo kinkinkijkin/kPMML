@@ -2,6 +2,7 @@ using kinkaudio;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Text;
 
 namespace kinkaudiorender
 {
@@ -74,6 +75,8 @@ namespace kinkaudiorender
 
             List<List<float>> unMixedChannels = new List<List<float>>();
 
+            List<float> currentChannel = new List<float>();
+
             for ( int i = 0; i < channelCount; i++ )
             {
                 string currentWav = string.Empty;
@@ -83,9 +86,7 @@ namespace kinkaudiorender
                 float currentPitchWavPeriod = 1;
                 float currentPitchWavAmp = 1;
                 int currentDuty = 200;
-                float currentAmp = 1;
-
-                List<float> currentChannel = new List<float>();
+                float currentAmp = 2;
 
                 bool isLoop = false;
 
@@ -183,13 +184,14 @@ namespace kinkaudiorender
                             {
                                 if ( currentWav.Contains(wave.wavName) )
                                 {
-                                    currentChannel.Add(
-                                        RenderWav(wave.wavType,
-                                        (samplerate / (Convert.ToSingle(
+                                    float f = RenderWav(wave.wavType,
+                                        (samplerate / (Single.Parse(
                                             command.Split(new [] { ' ' })[1])
                                             * channelOctave)),
                                             4, currentDuty,
-                                            channelFakeTime));
+                                            channelFakeTime);
+                                    currentChannel.Add(f);
+                                        
                                 }
                             }
                         }
@@ -237,13 +239,13 @@ namespace kinkaudiorender
                             {
                                 if ( currentWav.Contains(wave.wavName) )
                                 {
-                                    currentChannel.Add(
-                                        RenderWav(wave.wavType,
-                                        (samplerate / (Convert.ToSingle(
+                                    float f = RenderWav(wave.wavType,
+                                        (samplerate / (Single.Parse(
                                             command.Split(new [] { ' ' })[1])
                                             * channelOctave)),
                                             4, currentDuty,
-                                            channelFakeTime));
+                                            channelFakeTime);
+                                    currentChannel.Add(f); 
                                 }
                             }
                         }
@@ -252,25 +254,23 @@ namespace kinkaudiorender
                 unMixedChannels.Add(currentChannel);
             }
             List<float> outputFloats = new List<float>();
+            float avg = 0f;
             for ( int i = 0; i < unMixedChannels[0].Count; i++)
             {
-                float avg = 0f;
                 for ( int r = 0; r < unMixedChannels.Count; r++)
                 {
                     avg = avg + unMixedChannels[r][i] / channelCount;
                 }
                 outputFloats.Add(avg);
             }
-            List<int> outputInts = new List<int>();
+            List<byte> outputBytes = new List<byte>();
             foreach ( var sample in outputFloats )
             {
-                outputInts.Add(Convert.ToInt32(sample * 40));
+                short probablyNecessary = Convert.ToInt16((sample) * 40);
+                outputBytes.AddRange(BitConverter.GetBytes(probablyNecessary));
             }
-            foreach ( var outputsample in outputInts )
-            {
-                Console.Out.Write(outputsample);
-            }
-            return 1;
+            Console.Out.Write(BitConverter.ToString(outputBytes.ToArray()));
+            return 0;
         }
     }
 }
