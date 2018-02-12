@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace kinkaudiorender
+namespace kPMML
 {
-    public class kinkaudiorender
+    public class kPMML
     {
         static float RenderEnv ( string envType, float atk, float hld, float dcy,
         float sus, int time )
