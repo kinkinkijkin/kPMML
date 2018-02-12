@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace kinkaudiorender
 {
@@ -138,9 +139,13 @@ namespace kinkaudiorender
                         currentPitchWavAmp = Convert.ToSingle(
                             command.Split(new [] { ' ' })[1]);
                     }
-                    else if ( command.Contains("retrig") )
+                    else if ( command.Contains("retrig") ||
+                    command.Contains("noRetrig") )
                     {
-                        channelFakeTime = 0;
+                        if ( command.Contains("retrig") )
+                        {
+                            channelFakeTime = 0;
+                        }
                         for ( int r = 0; r < (samplerate / tickrate); r++)
                         {
                             channelFakeTime++;
@@ -172,12 +177,9 @@ namespace kinkaudiorender
                             {
                                 if ( currentEnv.Contains(env.envName) )
                                 {
-                                    currentAmp = currentAmp + (
-                                        RenderEnv(env.envType, channelFakeTime,
-                                        env.envValues[0], env.envValues[1],
-                                        env.envValues[2],
-                                        Convert.ToInt32(env.envValues[3])) - 1
-                                    );
+                                    currentAmp = RenderEnv(env.envType, env.envValues[0],
+                                    env.envValues[1], env.envValues[2], env.envValues[3],
+                                    channelFakeTime) + 1;
                                 }
                             }
                             foreach ( var wave in Wavcomms )
@@ -188,64 +190,10 @@ namespace kinkaudiorender
                                         (samplerate / (Single.Parse(
                                             command.Split(new [] { ' ' })[1])
                                             * channelOctave)),
-                                            4, currentDuty,
+                                            currentAmp, currentDuty,
                                             channelFakeTime);
                                     currentChannel.Add(f);
                                         
-                                }
-                            }
-                        }
-                    }
-                    else if ( command.Contains("noRetrig") )
-                    {
-                        for ( int r = 0; r < (samplerate / tickrate); r++)
-                        {
-                            channelFakeTime++;
-                            channelTime++;
-                            foreach ( var envelope in Envelops )
-                            {
-                                if ( currentPitchEnv.Contains(envelope.envName) )
-                                {
-                                    pitchShift = RenderEnv(envelope.envType,
-                                    channelFakeTime, envelope.envValues[0], 
-                                    envelope.envValues[1], envelope.envValues[2],
-                                    Convert.ToInt32(envelope.envValues[3]));
-                                }
-                            }
-                            foreach ( var wave in Wavcomms )
-                            {
-                                if ( currentPitchWav.Contains(wave.wavName) )
-                                {
-                                    pitchShift = RenderWav(wave.wavType,
-                                    currentPitchWavPeriod,
-                                    currentPitchWavAmp * wave.wavValues[0],
-                                    Convert.ToInt32(wave.wavValues[1]),
-                                    channelFakeTime);
-                                }
-                            }
-                            foreach ( var env in Envelops )
-                            {
-                                if ( currentEnv.Contains(env.envName) )
-                                {
-                                    currentAmp = currentAmp + (
-                                        RenderEnv(env.envType, channelFakeTime,
-                                        env.envValues[0], env.envValues[1],
-                                        env.envValues[2],
-                                        Convert.ToInt32(env.envValues[3])) - 1
-                                    );
-                                }
-                            }
-                            foreach ( var wave in Wavcomms )
-                            {
-                                if ( currentWav.Contains(wave.wavName) )
-                                {
-                                    float f = RenderWav(wave.wavType,
-                                        (samplerate / (Single.Parse(
-                                            command.Split(new [] { ' ' })[1])
-                                            * channelOctave)),
-                                            4, currentDuty,
-                                            channelFakeTime);
-                                    currentChannel.Add(f); 
                                 }
                             }
                         }
@@ -254,9 +202,10 @@ namespace kinkaudiorender
                 unMixedChannels.Add(currentChannel);
             }
             List<float> outputFloats = new List<float>();
-            float avg = 0f;
+            
             for ( int i = 0; i < unMixedChannels[0].Count; i++)
             {
+                float avg = 0f;
                 for ( int r = 0; r < unMixedChannels.Count; r++)
                 {
                     avg = avg + unMixedChannels[r][i] / channelCount;
@@ -266,10 +215,32 @@ namespace kinkaudiorender
             List<byte> outputBytes = new List<byte>();
             foreach ( var sample in outputFloats )
             {
-                short probablyNecessary = Convert.ToInt16((sample) * 40);
+                short probablyNecessary = Convert.ToInt16((sample) * 1000);
                 outputBytes.AddRange(BitConverter.GetBytes(probablyNecessary));
             }
-            Console.Out.Write(BitConverter.ToString(outputBytes.ToArray()));
+
+            var ffmpeg = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "ffmpeg",
+                    Arguments = "-f s16le -ac 1 -i - -c:a pcm_s16le output.wav",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardInput = true
+                }
+            };
+
+            ffmpeg.Start();
+
+            var ffmpegIn = ffmpeg.StandardInput.BaseStream;
+
+            ffmpegIn.Write(outputBytes.ToArray(), 0, outputBytes.Count);
+            
+            ffmpegIn.Flush();
+            ffmpegIn.Close();
+
+            ffmpeg.WaitForExit();
             return 0;
         }
     }
