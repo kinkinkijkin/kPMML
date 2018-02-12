@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.Linq;
 
 namespace kPMML
 {
@@ -89,12 +90,11 @@ namespace kPMML
                 int currentDuty = 200;
                 float currentAmp = 2;
 
-                bool isLoop = false;
-
                 int channelOctave = 4;
 
                 int channelTime = 0;
                 int channelFakeTime = 0;
+
                 foreach ( var command in musicCommands[i] )
                 {
                     float pitchShift = 1f;
@@ -199,10 +199,11 @@ namespace kPMML
                         }
                     }
                 }
-                unMixedChannels.Add(currentChannel);
+                unMixedChannels.Add(new List<float>(currentChannel));
+                //currentChannel.Clear();
             }
             List<float> outputFloats = new List<float>();
-            
+
             for ( int i = 0; i < unMixedChannels[0].Count; i++)
             {
                 float avg = 0f;
@@ -215,7 +216,7 @@ namespace kPMML
             List<byte> outputBytes = new List<byte>();
             foreach ( var sample in outputFloats )
             {
-                short probablyNecessary = Convert.ToInt16((sample) * 5000);
+                short probablyNecessary = Convert.ToInt16((sample) * 6000);
                 outputBytes.AddRange(BitConverter.GetBytes(probablyNecessary));
             }
 

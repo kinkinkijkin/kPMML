@@ -88,13 +88,13 @@ namespace kinkaudio
         LexDict dictionary, out List<List<string>> musicCommands)
         {
             bool currentBlock = false;
-            List<string> currentCommand = new List<string>();
             musicCommands = new List<List<string>>();
             musicCommands.Add(new List<string>());
             int channel = 0;
             int totalChannels = 0;
             foreach ( var line in inputList )
             {
+                List<string> currentCommand = new List<string>();
                 if (!currentBlock)
                 {
                     if ( line.StartsWith("/mu") ) currentBlock = true;
@@ -108,7 +108,7 @@ namespace kinkaudio
                         string[] currentLine = line.Split(new [] { ' ' });
                         if ( currentLine[0].Contains("c") )
                         {
-                            channel = Convert.ToInt32(
+                            channel = Int32.Parse(
                                 currentLine[0].TrimStart(new []{ 'c' }));
                             if ( channel > totalChannels ) 
                             {
