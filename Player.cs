@@ -78,7 +78,7 @@ namespace kinkaudiorender
 
             List<float> currentChannel = new List<float>();
 
-            for ( int i = 0; i < channelCount; i++ )
+            for ( int i = 0; i < channelCount + 1; i++ )
             {
                 string currentWav = string.Empty;
                 string currentEnv = string.Empty;
@@ -148,17 +148,15 @@ namespace kinkaudiorender
                         }
                         for ( int r = 0; r < (samplerate / tickrate); r++)
                         {
-                            channelFakeTime++;
-                            channelTime++;
                             foreach ( var envelope in Envelops )
                             {
                                 if ( currentPitchEnv.Contains(envelope.envName) )
                                 {
-                                    pitchShift = pitchShift +
-                                    RenderEnv(envelope.envType,
-                                    channelFakeTime, envelope.envValues[0], 
-                                    envelope.envValues[1], envelope.envValues[2],
-                                    Convert.ToInt32(envelope.envValues[3]));
+                                    pitchShift = pitchShift + 
+                                    RenderEnv(envelope.envType, 
+                                    envelope.envValues[0], envelope.envValues[1],
+                                    envelope.envValues[2], envelope.envValues[3],
+                                    channelFakeTime);
                                 }
                             }
                             foreach ( var wave in Wavcomms )
@@ -168,7 +166,7 @@ namespace kinkaudiorender
                                     pitchShift = pitchShift +
                                     RenderWav(wave.wavType,
                                     currentPitchWavPeriod,
-                                    currentPitchWavAmp * wave.wavValues[0],
+                                    currentPitchWavAmp + wave.wavValues[0],
                                     Convert.ToInt32(wave.wavValues[1]),
                                     channelFakeTime);
                                 }
@@ -187,15 +185,17 @@ namespace kinkaudiorender
                                 if ( currentWav.Contains(wave.wavName) )
                                 {
                                     float f = RenderWav(wave.wavType,
-                                        (samplerate / (Single.Parse(
+                                        (Convert.ToSingle(samplerate) / (Single.Parse(
                                             command.Split(new [] { ' ' })[1])
-                                            * channelOctave)),
-                                            currentAmp, currentDuty,
+                                            * channelOctave) + pitchShift),
+                                            currentAmp + wave.wavValues[0], currentDuty,
                                             channelFakeTime);
                                     currentChannel.Add(f);
                                         
                                 }
                             }
+                            channelFakeTime++;
+                            channelTime++;
                         }
                     }
                 }
@@ -208,14 +208,14 @@ namespace kinkaudiorender
                 float avg = 0f;
                 for ( int r = 0; r < unMixedChannels.Count; r++)
                 {
-                    avg = avg + unMixedChannels[r][i] / channelCount;
+                    avg = avg + unMixedChannels[r][i];
                 }
                 outputFloats.Add(avg);
             }
             List<byte> outputBytes = new List<byte>();
             foreach ( var sample in outputFloats )
             {
-                short probablyNecessary = Convert.ToInt16((sample) * 1000);
+                short probablyNecessary = Convert.ToInt16((sample) * 5000);
                 outputBytes.AddRange(BitConverter.GetBytes(probablyNecessary));
             }
 

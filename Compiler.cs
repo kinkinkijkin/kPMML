@@ -185,11 +185,7 @@ namespace kinkaudio
                             {
                                 loop = true;
                             }
-                            else if (loop && !currentCommand.Contains("loopEnd"))
-                            {
-                                loopRange.AddRange(currentCommand);
-                            }
-                            else if (loop)
+                            else if ( currentCommand.Contains("loopEnd") )
                             {
                                 for ( int i = 0; i < Convert.ToInt32(
                                     currentCommand[1]); i++)
@@ -198,6 +194,11 @@ namespace kinkaudio
                                 }
                                 loop = false;
                             }
+                            else if (loop)
+                            {
+                                loopRange.AddRange(currentCommand);
+                            }
+                            
                         }
                         musicCommands[channel].AddRange(currentCommand);
                     }
