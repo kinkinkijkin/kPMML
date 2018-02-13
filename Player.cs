@@ -75,12 +75,23 @@ namespace kPMML
 
             int channelCount = Convert.ToInt32(musicCommands[0][0]);
 
-            List<List<float>> unMixedChannels = new List<List<float>>();
+            List<float[]> unMixedChannels = new List<float[]>();
 
-            List<float> currentChannel = new List<float>();
+            long lengthInSamples = 0;
+
+            foreach ( var channel in musicCommands )
+            {
+                if ( channel.Count > lengthInSamples)
+                {
+                    lengthInSamples = (samplerate / tickrate) * channel.Count;
+                }
+            }
+
+            float[] currentChannel = new float[lengthInSamples];
 
             for ( int i = 0; i < channelCount + 1; i++ )
             {
+                
                 string currentWav = string.Empty;
                 string currentEnv = string.Empty;
                 string currentPitchEnv = string.Empty;
@@ -190,7 +201,8 @@ namespace kPMML
                                             * channelOctave) + pitchShift),
                                             currentAmp + wave.wavValues[0], currentDuty,
                                             channelFakeTime);
-                                    currentChannel.Add(f);
+                                    currentChannel[channelTime] = 
+                                    currentChannel[channelTime] + f / channelCount;
                                         
                                 }
                             }
@@ -199,25 +211,12 @@ namespace kPMML
                         }
                     }
                 }
-                unMixedChannels.Add(new List<float>(currentChannel));
-                //currentChannel.Clear();
             }
-            List<float> outputFloats = new List<float>();
 
-            for ( int i = 0; i < unMixedChannels[0].Count; i++)
-            {
-                float avg = 0f;
-                for ( int r = 0; r < unMixedChannels.Count; r++)
-                {
-                    avg = avg + unMixedChannels[r][i];
-                }
-                outputFloats.Add(avg);
-            }
             List<byte> outputBytes = new List<byte>();
-            foreach ( var sample in outputFloats )
+            foreach ( var sample in currentChannel )
             {
-                short probablyNecessary = Convert.ToInt16((sample) * 6000);
-                outputBytes.AddRange(BitConverter.GetBytes(probablyNecessary));
+                outputBytes.AddRange(BitConverter.GetBytes(sample));
             }
 
             var ffmpeg = new Process
@@ -225,7 +224,7 @@ namespace kPMML
                 StartInfo =
                 {
                     FileName = "ffmpeg",
-                    Arguments = "-f s16le -ac 1 -i - -c:a pcm_s16le output.wav",
+                    Arguments = "-f f32le -ac 1 -i - -c:a pcm_s16le output.wav",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardInput = true
