@@ -11,11 +11,10 @@ namespace kinkaudio
         "E", "FN", "FS", "GN", "GS", "AN", "AS", "B", "R" };
         public readonly float[] notevalues = new float[13] { 16.35f, 17.32f, 18.35f,
         19.45f, 20.60f, 21.83f, 23.12f, 24.50f, 25.96f, 27.50f, 29.14f, 30.87f, 0f };
-        public readonly string[] commandnames = new string[7] { "p=", "P=", "o=",
-        "va=", "vs=", "(", ")"};
-        public readonly string[] commandqualities = new string[7] { "pitchEnv", 
-        "pitchVibrato", "octaveSet", "vibSpeed", "vibAmplitude", "loopStart",
-        "loopEnd" };
+        public readonly string[] commandnames = new string[5] { "p=", "P=", "o=",
+        "va=", "vs="};
+        public readonly string[] commandqualities = new string[5] { "pitchEnv", 
+        "pitchVibrato", "octaveSet", "vibSpeed", "vibAmplitude"};
         public readonly char[] integers = new char[10] { '1', '2', '3', '4', '5',
         '6', '7', '8', '9', '0' };
         public List<string> envnames { get; set; }
@@ -118,7 +117,33 @@ namespace kinkaudio
                         }
                         bool loop = false;
                         List<string> loopRange = new List<string>();
+                        List<string> loopTotal = new List<string>();
+                        int loopEndIndex = 0;
                         foreach ( var command in currentLine )
+                        {
+                            if ( command.Contains ("(") )
+                            {
+                                loop = true;
+                            }
+                            if ( command.Contains (")") )
+                            {
+                                loop = false;
+                                for ( int i = 0; i < Int32.Parse(
+                                    command.TrimStart(')')); i++)
+                                {
+                                    loopTotal.AddRange(loopRange);
+                                }
+                            }
+                            else if ( loop )
+                            {
+                                loopRange.Add(command);
+                            }
+                            else loopEndIndex++;
+                        }
+                        List<string> newCurrentLine = new List<string>();
+                        newCurrentLine.AddRange(currentLine);
+                        newCurrentLine.InsertRange(loopEndIndex, loopTotal);
+                        foreach ( var command in newCurrentLine )
                         {
                             for ( int i = 0; i < dictionary.notenames.Length; i++ )
                             {
@@ -181,24 +206,6 @@ namespace kinkaudio
                                     currentCommand.Add(newCommand);
                                 }
                             }
-                            if ( currentCommand.Contains("loopStart") )
-                            {
-                                loop = true;
-                            }
-                            else if ( currentCommand.Contains("loopEnd") )
-                            {
-                                for ( int i = 0; i < Convert.ToInt32(
-                                    currentCommand[1]); i++)
-                                {
-                                    musicCommands[channel].AddRange(loopRange);
-                                }
-                                loop = false;
-                            }
-                            else if (loop)
-                            {
-                                loopRange.AddRange(currentCommand);
-                            }
-                            
                         }
                         musicCommands[channel].AddRange(currentCommand);
                     }

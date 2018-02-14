@@ -78,12 +78,14 @@ namespace kPMML
             List<float[]> unMixedChannels = new List<float[]>();
 
             long lengthInSamples = 0;
+            int lengthInFrames = 0;
 
             foreach ( var channel in musicCommands )
             {
-                if ( channel.Count > lengthInSamples)
+                if ( channel.Count > lengthInFrames )
                 {
                     lengthInSamples = (samplerate / tickrate) * channel.Count;
+                    lengthInFrames = channel.Count;
                 }
             }
 

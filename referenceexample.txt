@@ -16,21 +16,26 @@ sin SINE 3 0
 saw SAWT 6 0
 /mu the start of the music 1
 c1 1 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
-c2 saw henry o=4 CN360
-c3 saw henry o=4 R1 GN359
-c4 saw henry o=4 R3 AS357
-c5 saw henry o=5 R6 DN354
+c2 saw henry o=4 CN420
+c3 saw henry o=4 R1 GN419
+c4 saw henry o=4 R3 AS417
+c5 saw henry o=5 R6 DN414
 c1 2 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
 c1 3 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
 c1 4 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
 c1 3 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
 c1 2 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
-c1 1 o=1 B10 o=2 FS15 CN5 DN10 AS15 o=3 CN5
-c1 2 o=1 B10 o=2 FS15 CN5 DN10 AS15 o=3 CN5
-c1 3 o=1 B10 o=2 FS15 CN5 DN10 AS15 o=3 CN5
-c1 4 o=1 B10 o=2 FS15 CN5 DN10 AS15 o=3 CN5
-c1 3 o=1 B10 o=2 FS15 CN5 DN10 AS15 o=3 CN5
-c1 2 o=1 B10 o=2 FS15 CN5 DN10 AS15 o=3 CN5
-c1 1 o=1 B10 o=2 FS15 CN5 DN10 AS15 o=3 CN5
+c1 1 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
+c1 1 o=1 B10 o=2 FS15 CN5 DN10 AN15 o=3 CN5
+c2 saw henry o=3 B420
+c3 saw henry o=4 R1 FS419
+c4 saw henry o=4 R3 AN417
+c5 saw henry o=5 R6 CN414
+c1 2 o=1 B10 o=2 FS15 CN5 DN10 AN15 o=3 CN5
+c1 3 o=1 B10 o=2 FS15 CN5 DN10 AN15 o=3 CN5
+c1 4 o=1 B10 o=2 FS15 CN5 DN10 AN15 o=3 CN5
+c1 3 o=1 B10 o=2 FS15 CN5 DN10 AN15 o=3 CN5
+c1 2 o=1 B10 o=2 FS15 CN5 DN10 AN15 o=3 CN5
+c1 1 o=1 B10 o=2 FS15 CN5 DN10 AN15 o=3 CN5
 c2
 END
