@@ -16,7 +16,7 @@ namespace kinkaudio
 		}
 		public static float GenTriangle(int time, float amplitude, float period)
 		{
-			return Convert.ToSingle((2 / period * (Math.Abs((time % 4) - period / 2) - period / 4)) / amplitude);
+			return Convert.ToSingle((2 / period * (Math.Abs((time % period) - period / 2) - period / 4)) / amplitude);
 		}
 		public static float GenPCycloid(int time, float amplitude, float period)
 		{
