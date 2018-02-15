@@ -69,7 +69,7 @@ namespace kPMML
             Compiler.Compile(args[0], out var Envelops, out var Wavcomms, out var FMC,
             out var musicCommands, out string metadata, out int tickrate);
 
-            int samplerate = Convert.ToInt32(args[1]);
+            int samplerate = Int32.Parse(args[1]);
             if ( samplerate % tickrate != 0 )
             {
                 Console.WriteLine("BAD SAMPLERATE FOR THAT TICKRATE, BAKA");
@@ -78,9 +78,7 @@ namespace kPMML
 
             //Console.WriteLine(metadata + " at " + tickrate + "hz.");
 
-            int channelCount = Convert.ToInt32(musicCommands[0][0]);
-
-            List<float[]> unMixedChannels = new List<float[]>();
+            int channelCount = Int32.Parse(musicCommands[0][0]);
 
             long lengthInSamples = 0;
             int lengthInFrames = 0;
@@ -212,7 +210,7 @@ namespace kPMML
                                             * channelOctave) + pitchShift),
                                             currentAmp + wave.wavValues[0], currentDuty,
                                             channelFakeTime);
-                                    currentChannel[i,channelTime] = 
+                                    currentChannel[i - 1,channelTime] = 
                                         f / channelCount;
                                         
                                 }
@@ -239,7 +237,7 @@ namespace kPMML
                                         * channelOctave
                                         * fm.fmMult)), channelFakeTime, fm.fmTruncMod,
                                         fm.fmTruncCar);
-                                    currentChannel[i,channelTime] =
+                                    currentChannel[i - 1,channelTime] =
                                         f / channelCount;
 
                                 }
@@ -250,14 +248,13 @@ namespace kPMML
                     }
                 }
             }
-
             float[] mixedChannels = new float[lengthInSamples];
-            for ( int i = 0; i < currentChannel.GetLength(0); i++)
+            for ( int i = 0; i < currentChannel.GetLength(1); i++)
             {
                 float f = 0f;
-                for ( int r = 0; r < currentChannel.Length; r++)
+                for ( int r = 0; r < currentChannel.GetLength(0); r++)
                 {
-                    f += currentChannel[r,i];
+                    f = f + currentChannel[r,i];
                 }
                 mixedChannels[i] = f;
             }

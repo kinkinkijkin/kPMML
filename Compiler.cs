@@ -113,6 +113,7 @@ namespace kinkaudio
                     else if ( line.StartsWith("/mu") ) currentBlock = true;
                     else
                     {
+                        bool isMacro = false;
                         string[] currentLine = line.Split(new [] { ' ' });
                         if ( currentLine[0].Contains("c") )
                         {
@@ -127,6 +128,7 @@ namespace kinkaudio
                         else
                         {
                             arbitraryMacros.Add(line.Split(new [] { ' ' }, 2));
+                            isMacro = true;
                         }
                         bool loop = false;
                         List<string> loopRange = new List<string>();
@@ -158,7 +160,7 @@ namespace kinkaudio
                         newCurrentLine.AddRange(currentLine);
                         newCurrentLine.InsertRange(loopEndIndex, loopTotal);
 
-                        int macroIndex = 0;
+                        int macroIndex = 1;
                         foreach ( var command in currentLine )
                         {
                             foreach ( var macro in arbitraryMacros )
@@ -244,7 +246,7 @@ namespace kinkaudio
                                 }
                             }
                         }
-                        musicCommands[channel].AddRange(currentCommand);
+                        if (!isMacro) musicCommands[channel].AddRange(currentCommand);
                     }
                 }
             }
@@ -294,7 +296,7 @@ namespace kinkaudio
             out fmTypes, out fmMacrosValues);
 
             LexDict dictionary = new LexDict(envMacros, envTypes, envMacrosValues,
-            wavMacros, wavTypes, wavMacrosValues, fmMacros, fmMacrosValues, fmTypes);
+            wavMacros, wavTypes, wavMacrosValues, fmMacros, fmTypes, fmMacrosValues);
 
             GetMusicBlock(inputFile, dictionary, out commands);
 
@@ -331,7 +333,7 @@ namespace kinkaudio
             }
 
             fmInfo = new List<ChanFM>();
-
+            
             for ( int i = 0; i < dictionary.fmnames.Count; i++ )
             {
                 string newEnvName = dictionary.fmvalues[i].Split(' ')[0];
