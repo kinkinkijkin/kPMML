@@ -1,12 +1,32 @@
 #example input file
+#name and artist fields doesn't actually do anything right now
+#samplerate is 44100
+#CURRENTLY ALL EMPTY LINES MUST CONTAIN COMMENTS!!!
 name=baguette=eman
 artist=kinkinkijkin
 60hz
-/env
-# env  a  h  d  s
-henry AHD 5000 50000 500000
-steve AHD 50 0 20000
+/env you can put any comment you want after the block notifiers
+# env table must contain at least one entry or the compiler will crash
+#
+# macro table names can be anything that's not already used in the macro tables or the code spec
+#
+# AHDS is not working properly, don't use the AHDS env type
+# it's recommended to not make attack 0, as I do not auto-ramp
+#
+# env  a  h  d  s YOU MUST FOLLOW THIS ORDER, these times are in samples so please include a comment with your samplerate!
+henry AHD 5000 50000 500000 0
+steve AHD 50 0 20000 0
 /wav
+#wav table must contain at least one entry or the compiler will crash
+#
+# wav can be any of PULS, SINE, SAWT, TRIA, PCYC.
+# PULS duty values less than 200 will slowly morph into a sawtooth and get louder
+# PULS duty values more than 200 will morph from a 50% square to an 0.000...1% square as they reach 400
+# DO NOT INPUT A FLOAT FOR duty!!!!!!!!
+#
+# AMP is inverse!!!!!!! anything below 1 is extremely loud!!!!!!!
+# ONLY USE AMP VALUES LESS THAN 1 FOR FM!!!!!!!
+#
 # wav  amp  duty
 1 PULS 1 200
 2 PULS 1 250
@@ -15,19 +35,35 @@ steve AHD 50 0 20000
 sin SINE 3 0
 saw SAWT 6 0
 /fm
-
-/mu the start of the music 1
-c1 1 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
+#FM table must contain at least one entry or the compiler will crash
+#
+# type currently does nothing
+# carrierenvlope specifies which envelope define in /env to use for the carrier
+# multiplier specifies the carrier multiplier
+# trunc values can be 0, 1, or 2. 0 does not truncate, 1 truncates the top, 2 truncates the bottom
+# reference channel is which channel to use as the modulator
+#
+# fm carrierenvelope multiplier truncmod trunccar referencechannel
+bob FM2O henry 1 0 0 0
+/mu the start of the music, you can have as many of these as you want it doesn't matter
+#
+# lines can be split arbitrarily
+# lengths are in frames of the defined tickrate (xhz line), not fractions!
+# you cannot loop within a music macro (labelled jesus below) and cannot use a music macro in loops (will fix)
+# loops are defined with ( music )x, where x is times to loop.
+#
+jesus o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
+c1 1 steve jesus
 c2 saw henry o=4 CN420
 c3 saw henry o=4 R1 GN419
 c4 saw henry o=4 R3 AS417
 c5 saw henry o=5 R6 DN414
-c1 2 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
-c1 3 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
-c1 4 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
-c1 3 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
-c1 2 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
-c1 1 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
+c1 2 steve jesus
+c1 3 steve jesus
+c1 4 steve jesus
+c1 3 steve jesus
+c1 2 steve jesus
+c1 1 steve jesus
 #
 # chord change
 #
