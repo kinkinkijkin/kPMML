@@ -14,6 +14,8 @@ steve AHD 50 0 20000
 4 PULS 1 350
 sin SINE 3 0
 saw SAWT 6 0
+/fm
+
 /mu the start of the music 1
 c1 1 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
 c2 saw henry o=4 CN420
@@ -26,6 +28,9 @@ c1 4 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
 c1 3 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
 c1 2 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
 c1 1 steve o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
+#
+# chord change
+#
 c1 1 o=1 B10 o=2 FS15 CN5 DN10 AN15 o=3 CN5
 c2 saw henry o=3 B420
 c3 saw henry o=4 R1 FS419

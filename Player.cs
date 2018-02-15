@@ -48,6 +48,11 @@ namespace kPMML
             }
             else return 0.1f;
         }
+        static float RenderFM ( float inOp, float amp, float mult, int time, int trm,
+        int trc )
+        {
+            return FM.FM2opMergeTrunc(inOp, amp, mult, time, trm, trc);
+        }
         static int Main (string[] args)
         {
             if (args.Length < 2)
@@ -61,7 +66,7 @@ namespace kPMML
                 Console.WriteLine("INVALID INPUT, QUEEFJESUS");
                 return 1;
             }
-            Compiler.Compile(args[0], out var Envelops, out var Wavcomms,
+            Compiler.Compile(args[0], out var Envelops, out var Wavcomms, out var FMC,
             out var musicCommands, out string metadata, out int tickrate);
 
             int samplerate = Convert.ToInt32(args[1]);
@@ -89,11 +94,11 @@ namespace kPMML
                 }
             }
 
-            float[] currentChannel = new float[lengthInSamples];
+            float[,] currentChannel = new float[channelCount,lengthInSamples];
 
             for ( int i = 0; i < channelCount + 1; i++ )
             {
-                
+                string currentFM = string.Empty;
                 string currentWav = string.Empty;
                 string currentEnv = string.Empty;
                 string currentPitchEnv = string.Empty;
@@ -113,11 +118,11 @@ namespace kPMML
                     float pitchShift = 1f;
                     if ( command.Contains("envSet") )
                     {
-                        currentEnv = command.Split(new [] { ' ' })[1];
+                        currentEnv = command.Split(' ')[1];
                     }
                     else if ( command.Contains("wavSet") )
                     {
-                        currentWav = command.Split(new [] { ' ' })[1];
+                        currentWav = command.Split(' ')[1];
                         foreach ( var wave in Wavcomms )
                         {
                             if ( !currentWav.Equals(wave.wavName) )
@@ -128,6 +133,10 @@ namespace kPMML
                                 currentAmp = wave.wavValues[0];
                             }
                         }
+                    }
+                    else if ( command.Contains("fmSet") )
+                    {
+                        currentFM = command.Split(' ')[1];
                     }
                     else if ( command.Contains("pitchEnv") )
                     {
@@ -199,13 +208,40 @@ namespace kPMML
                                 {
                                     float f = RenderWav(wave.wavType,
                                         (Convert.ToSingle(samplerate) / (Single.Parse(
-                                            command.Split(new [] { ' ' })[1])
+                                            command.Split(' ')[1])
                                             * channelOctave) + pitchShift),
                                             currentAmp + wave.wavValues[0], currentDuty,
                                             channelFakeTime);
-                                    currentChannel[channelTime] = 
-                                    currentChannel[channelTime] + f / channelCount;
+                                    currentChannel[i,channelTime] = 
+                                        f / channelCount;
                                         
+                                }
+                            }
+                            foreach ( var fm in FMC )
+                            {
+                                float carAmp = currentAmp;
+                                if ( currentFM.Contains(fm.fmName) )
+                                {
+                                    foreach ( var env in Envelops )
+                                    {
+                                        if ( fm.fmEnvName.Equals(env.envName) )
+                                        {
+                                            carAmp = RenderEnv(
+                                                env.envType, env.envValues[0],
+                                                env.envValues[1], env.envValues[2],
+                                                env.envValues[3], channelFakeTime) + 1;
+                                        }
+                                    }
+                                    float f = RenderFM(currentChannel
+                                    [fm.fmInputChannel,channelTime],
+                                        carAmp, (Convert.ToSingle(samplerate) / (
+                                        Single.Parse(command.Split(' ')[1])
+                                        * channelOctave
+                                        * fm.fmMult)), channelFakeTime, fm.fmTruncMod,
+                                        fm.fmTruncCar);
+                                    currentChannel[i,channelTime] =
+                                        f / channelCount;
+
                                 }
                             }
                             channelFakeTime++;
@@ -215,8 +251,19 @@ namespace kPMML
                 }
             }
 
+            float[] mixedChannels = new float[lengthInSamples];
+            for ( int i = 0; i < currentChannel.GetLength(0); i++)
+            {
+                float f = 0f;
+                for ( int r = 0; r < currentChannel.Length; r++)
+                {
+                    f += currentChannel[r,i];
+                }
+                mixedChannels[i] = f;
+            }
+
             List<byte> outputBytes = new List<byte>();
-            foreach ( var sample in currentChannel )
+            foreach ( var sample in mixedChannels )
             {
                 outputBytes.AddRange(BitConverter.GetBytes(sample));
             }

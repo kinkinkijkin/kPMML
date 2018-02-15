@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,9 +24,13 @@ namespace kinkaudio
         public List<string> wavnames { get; set; }
         public List<string> wavtypes { get; set; }
         public List<string> wavalues { get; set; }
+        public List<string> fmnames { get; set; }
+        public List<string> fmtypes { get; set; }
+        public List<string> fmvalues { get; set; }
         public LexDict (List<string> envNames, List<string> envTypes,
         List<string> envValues, List<string> wavNames, List<string> wavTypes,
-        List<string> wavValues)
+        List<string> wavValues, List<string> fmNames, List<string> fmTypes,
+        List<string> fmValues)
         {
             envnames = envNames;
             envtypes = envTypes;
@@ -33,6 +38,9 @@ namespace kinkaudio
             wavnames = wavNames;
             wavtypes = wavTypes;
             wavalues = wavValues;
+            fmnames = fmNames;
+            fmtypes = fmTypes;
+            fmvalues = fmValues;
         }
     }
     public class Compiler
@@ -91,6 +99,7 @@ namespace kinkaudio
             musicCommands.Add(new List<string>());
             int channel = 0;
             int totalChannels = 0;
+            List<string[]> arbitraryMacros = new List<string[]>();
             foreach ( var line in inputList )
             {
                 List<string> currentCommand = new List<string>();
@@ -114,6 +123,10 @@ namespace kinkaudio
                                 totalChannels = channel;
                                 musicCommands.Add(new List<string>());
                             }
+                        }
+                        else
+                        {
+                            arbitraryMacros.Add(line.Split(new [] { ' ' }, 2));
                         }
                         bool loop = false;
                         List<string> loopRange = new List<string>();
@@ -141,8 +154,23 @@ namespace kinkaudio
                             else loopEndIndex++;
                         }
                         List<string> newCurrentLine = new List<string>();
+
                         newCurrentLine.AddRange(currentLine);
                         newCurrentLine.InsertRange(loopEndIndex, loopTotal);
+
+                        int macroIndex = 0;
+                        foreach ( var command in currentLine )
+                        {
+                            foreach ( var macro in arbitraryMacros )
+                            {
+                                if ( command.Contains(macro[0]) )
+                                {
+                                    newCurrentLine.InsertRange(macroIndex, macro[1]
+                                        .Split(' '));
+                                }
+                            }
+                            macroIndex++;
+                        }
                         foreach ( var command in newCurrentLine )
                         {
                             for ( int i = 0; i < dictionary.notenames.Length; i++ )
@@ -206,6 +234,15 @@ namespace kinkaudio
                                     currentCommand.Add(newCommand);
                                 }
                             }
+                            for ( int i = 0; i < dictionary.fmnames.Count; i++)
+                            {
+                                if ( command.Equals(dictionary.fmnames[i]) )
+                                {
+                                    string newCommand = "fmSet "
+                                    + dictionary.fmnames[i];
+                                    currentCommand.Add(newCommand);
+                                }
+                            }
                         }
                         musicCommands[channel].AddRange(currentCommand);
                     }
@@ -226,8 +263,8 @@ namespace kinkaudio
             return "empty";
         }
         public static void Compile ( string inputFileName, out List<ChanEnv> envInfo,
-        out List<ChanWav> wavInfo, out List<List<string>> commands,
-        out string metadata, out int tickrate)
+        out List<ChanWav> wavInfo, out List<ChanFM> fmInfo,
+        out List<List<string>> commands, out string metadata, out int tickrate)
         {
             List<string> inputFile = new List<string>(
                 File.ReadAllLines(inputFileName));
@@ -243,15 +280,21 @@ namespace kinkaudio
             List<string> wavMacros;
             List<string> wavMacrosValues;
             List<string> wavTypes;
+            List<string> fmMacros;
+            List<string> fmMacrosValues;
+            List<string> fmTypes;
 
             GetMacroBlock(inputFile, new [] { "/env", "/wav" }, out envMacros,
             out envTypes, out envMacrosValues);
 
-            GetMacroBlock(inputFile, new [] { "/wav", "/mu" }, out wavMacros,
+            GetMacroBlock(inputFile, new [] { "/wav", "/fm" }, out wavMacros,
             out wavTypes, out wavMacrosValues);
 
+            GetMacroBlock(inputFile, new [] { "/fm", "/mu" }, out fmMacros,
+            out fmTypes, out fmMacrosValues);
+
             LexDict dictionary = new LexDict(envMacros, envTypes, envMacrosValues,
-            wavMacros, wavTypes, wavMacrosValues);
+            wavMacros, wavTypes, wavMacrosValues, fmMacros, fmMacrosValues, fmTypes);
 
             GetMusicBlock(inputFile, dictionary, out commands);
 
@@ -279,12 +322,26 @@ namespace kinkaudio
                 foreach ( var value in dictionary.wavalues[i].Split(
                     new [] { ' ' }) )
                 {
-                    newWavValues.Add(Convert.ToSingle(value));
+                    newWavValues.Add(Single.Parse(value));
                 }
                 if ( newWavValues.Count < 2 ) newWavValues.Add(0f);
                 ChanWav newWavInfo = new ChanWav(dictionary.wavnames[i], 
                 dictionary.wavtypes[i], newWavValues);
                 wavInfo.Add(newWavInfo);
+            }
+
+            fmInfo = new List<ChanFM>();
+
+            for ( int i = 0; i < dictionary.fmnames.Count; i++ )
+            {
+                string newEnvName = dictionary.fmvalues[i].Split(' ')[0];
+                float newMult = Single.Parse(dictionary.fmvalues[i].Split(' ')[1]);
+                int newTruncMod = Int32.Parse(dictionary.fmvalues[i].Split(' ')[2]);
+                int newTruncCar = Int32.Parse(dictionary.fmvalues[i].Split(' ')[3]);
+                int newInputChannel = Int32.Parse(
+                    dictionary.fmvalues[i].Split(' ')[4]);
+                fmInfo.Add(new ChanFM(dictionary.fmnames[i], dictionary.fmtypes[i],
+                newEnvName, newMult, newTruncMod, newTruncCar, newInputChannel));
             }
         }
     }
@@ -310,6 +367,27 @@ namespace kinkaudio
             wavName = wavname;
             wavType = wavtype;
             wavValues = wavvalues;
+        }
+    }
+    public struct ChanFM
+    {
+        public string fmName { get; set; }
+        public string fmType { get; set; }
+        public string fmEnvName { get; set; }
+        public float fmMult { get; set; }
+        public int fmTruncMod { get; set; }
+        public int fmTruncCar { get; set; }
+        public int fmInputChannel { get; set; }
+        public ChanFM ( string fmname, string type, string envname, float mult,
+        int truncmod, int trunccar, int inputchannel)
+        {
+            fmName = fmname;
+            fmType = type;
+            fmEnvName = envname;
+            fmMult = mult;
+            fmTruncMod = truncmod;
+            fmTruncCar = trunccar;
+            fmInputChannel = inputchannel;
         }
     }
 }
