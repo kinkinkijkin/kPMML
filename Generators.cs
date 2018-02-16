@@ -25,7 +25,7 @@ namespace kinkaudio
 		}
 		public static float GenSin(int time, float amplitude, float period)
 		{
-			return Convert.ToSingle(Math.Sin(time / period) / amplitude);
+			return Convert.ToSingle(Math.Sin(time / period * 8) / amplitude);
 		}
 
 	}

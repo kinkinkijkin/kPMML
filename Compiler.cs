@@ -11,7 +11,7 @@ namespace kinkaudio
         public readonly string[] notenames = new string[13] { "CN", "CS", "DN", "DS",
         "E", "FN", "FS", "GN", "GS", "AN", "AS", "B", "R" };
         public readonly float[] notevalues = new float[13] { 16.35f, 17.32f, 18.35f,
-        19.45f, 20.60f, 21.83f, 23.12f, 24.50f, 25.96f, 27.50f, 29.14f, 30.87f, 0f };
+        19.45f, 20.60f, 21.83f, 23.12f, 24.50f, 25.96f, 27.50f, 29.14f, 30.87f, 0.1f };
         public readonly string[] commandnames = new string[5] { "p=", "P=", "o=",
         "va=", "vs="};
         public readonly string[] commandqualities = new string[5] { "pitchEnv", 
@@ -144,7 +144,7 @@ namespace kinkaudio
                             {
                                 loop = false;
                                 for ( int i = 0; i < Int32.Parse(
-                                    command.TrimStart(')')); i++)
+                                    command.TrimStart(')')) - 1; i++)
                                 {
                                     loopTotal.AddRange(loopRange);
                                 }
@@ -169,6 +169,7 @@ namespace kinkaudio
                                 {
                                     newCurrentLine.InsertRange(macroIndex, macro[1]
                                         .Split(' '));
+                                    macroIndex+= macroIndex;
                                 }
                             }
                             macroIndex++;

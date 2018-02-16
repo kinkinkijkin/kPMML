@@ -1,6 +1,8 @@
 using kinkaudio;
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
@@ -94,7 +96,7 @@ namespace kPMML
 
             float[,] currentChannel = new float[channelCount,lengthInSamples];
 
-            for ( int i = 0; i < channelCount + 1; i++ )
+            Parallel.For ( 0, channelCount + 1, i =>
             {
                 string currentFM = string.Empty;
                 string currentWav = string.Empty;
@@ -247,7 +249,7 @@ namespace kPMML
                         }
                     }
                 }
-            }
+            } );
             float[] mixedChannels = new float[lengthInSamples];
             for ( int i = 0; i < currentChannel.GetLength(1); i++)
             {
