@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +14,11 @@ namespace kinkaudio
         "E", "FN", "FS", "GN", "GS", "AN", "AS", "B", "R" };
         public readonly float[] notevalues = new float[13] { 16.35f, 17.32f, 18.35f,
         19.45f, 20.60f, 21.83f, 23.12f, 24.50f, 25.96f, 27.50f, 29.14f, 30.87f, 0.1f };
-        public readonly string[] commandnames = new string[5] { "p=", "P=", "o=",
-        "va=", "vs="};
-        public readonly string[] commandqualities = new string[5] { "pitchEnv", 
-        "pitchVibrato", "octaveSet", "vibSpeed", "vibAmplitude"};
+        public readonly string[] commandnames = new string[7] { "p=", "P=", "o=",
+        "va=", "vs=", "o+", "o-"};
+        public readonly string[] commandqualities = new string[7] { "pitchEnv", 
+        "pitchVibrato", "octaveSet", "vibSpeed", "vibAmplitude", "octaveInc",
+        "octaveDec" };
         public readonly char[] integers = new char[10] { '1', '2', '3', '4', '5',
         '6', '7', '8', '9', '0' };
         public List<string> envnames { get; set; }
@@ -51,7 +54,7 @@ namespace kinkaudio
             inputListCopy.AddRange(inputList);
             foreach ( var line in inputList )
             {
-                if ( line.StartsWith("#") )
+                if ( line.StartsWith("#") || string.IsNullOrEmpty(line) )
                 {
                     inputListCopy.Remove( line );
                 }
@@ -91,6 +94,73 @@ namespace kinkaudio
                 }
             }
         }
+
+        static string[] fillLoops ( List<string> inputLine )
+        {
+            int loopDepth = 1;
+
+            List<string> returnValues = new List<string>(inputLine);
+
+            foreach ( var command in inputLine )
+            {
+                if ( command.Contains("(") )
+                {
+                    loopDepth++;
+                }
+            }
+
+            for ( int q = 0; q < loopDepth; q++ ) 
+            {
+                int loopEndIndex = 0;
+                int loopsDeep = 0;
+                int loopsOut = 0;
+                int loopLength = 0;
+                int loops = 0;
+                bool loop = false;
+                List<string> loopRange = new List<string>();
+                List<string> loopTotal = new List<string>();
+                foreach ( var command in inputLine )
+                {
+                    if ( command.Contains("(") && !loop )
+                    {
+                        loopsDeep++;
+                        if ( loopsDeep >= loopDepth - q )
+                        {
+                            loop = true;
+                            loopLength++;
+                        }
+                    }
+
+                    else if ( loop )
+                    {
+                        loopRange.Add(command);
+                        loopLength++;
+                    }
+
+                    if ( command.Contains(")") && loop )
+                    {
+                        loopsOut++;
+                        loopRange.Add(command);
+                        if ( loopsOut >= q )
+                        {
+                            loop = false;
+                            loops = Int32.Parse(
+                                command.TrimStart(')'));
+                            for ( int g = 0; g < loops - 1; g++)
+                            {
+                                loopTotal.AddRange(loopRange.ToArray());
+                            }
+                            returnValues.InsertRange(loopEndIndex,
+                                loopTotal.ToArray());
+                            loopEndIndex += loopLength * (loops);
+                        }
+                    }
+                    loopEndIndex++;
+                }
+            }
+            return returnValues.ToArray();
+        }
+
         static void GetMusicBlock ( List<string> inputList, 
         LexDict dictionary, out List<List<string>> musicCommands)
         {
@@ -114,7 +184,15 @@ namespace kinkaudio
                     else
                     {
                         bool isMacro = false;
+
+                        List<string> newCurrentLine = new List<string>();
+                        List<string> newerCurrentLine = new List<string>();
+                        List<string> newererCurrentLine = new List<string>();
+
                         string[] currentLine = line.Split(new [] { ' ' });
+
+                        newCurrentLine.AddRange(currentLine);
+
                         if ( currentLine[0].Contains("c") )
                         {
                             channel = Int32.Parse(
@@ -124,57 +202,32 @@ namespace kinkaudio
                                 totalChannels = channel;
                                 musicCommands.Add(new List<string>());
                             }
+                            newerCurrentLine.AddRange(fillLoops(newCurrentLine));
+                            newererCurrentLine.AddRange(newerCurrentLine);
+                            int macroIndex = 0;
+                            foreach ( var command in newerCurrentLine )
+                            {
+                                macroIndex++;
+                                foreach ( var macro in arbitraryMacros )
+                                {
+                                    if ( command.Contains(macro[0]) )
+                                    {
+                                        newererCurrentLine
+                                            .InsertRange(macroIndex,
+                                                macro);
+                                        macroIndex += macro.Length;
+                                    }
+                                }
+                            }
                         }
                         else
                         {
-                            arbitraryMacros.Add(line.Split(new [] { ' ' }, 2));
+                            newererCurrentLine.AddRange(fillLoops(newCurrentLine));
+                            arbitraryMacros.Add(newererCurrentLine.ToArray());
                             isMacro = true;
                         }
-                        bool loop = false;
-                        List<string> loopRange = new List<string>();
-                        List<string> loopTotal = new List<string>();
-                        int loopEndIndex = 0;
-                        foreach ( var command in currentLine )
-                        {
-                            if ( command.Contains ("(") )
-                            {
-                                loop = true;
-                            }
-                            if ( command.Contains (")") )
-                            {
-                                loop = false;
-                                for ( int i = 0; i < Int32.Parse(
-                                    command.TrimStart(')')) - 1; i++)
-                                {
-                                    loopTotal.AddRange(loopRange);
-                                }
-                            }
-                            else if ( loop )
-                            {
-                                loopRange.Add(command);
-                            }
-                            else loopEndIndex++;
-                        }
-                        List<string> newCurrentLine = new List<string>();
 
-                        newCurrentLine.AddRange(currentLine);
-                        newCurrentLine.InsertRange(loopEndIndex, loopTotal);
-
-                        int macroIndex = 1;
-                        foreach ( var command in currentLine )
-                        {
-                            foreach ( var macro in arbitraryMacros )
-                            {
-                                if ( command.Contains(macro[0]) )
-                                {
-                                    newCurrentLine.InsertRange(macroIndex, macro[1]
-                                        .Split(' '));
-                                    macroIndex+= macroIndex;
-                                }
-                            }
-                            macroIndex++;
-                        }
-                        foreach ( var command in newCurrentLine )
+                        foreach ( var command in newererCurrentLine.ToArray() )
                         {
                             for ( int i = 0; i < dictionary.notenames.Length; i++ )
                             {
@@ -186,7 +239,7 @@ namespace kinkaudio
                                     {
                                         currentCommand.Add("retrig " + newCommand);
                                         for ( int r = 1;
-                                        r < Convert.ToInt32(command.TrimStart(
+                                        r < Int32.Parse(command.TrimStart(
                                         dictionary.notenames[i].ToCharArray())); r++ )
                                         {
                                             currentCommand.Add("noRetrig " 
@@ -195,8 +248,8 @@ namespace kinkaudio
                                     }
                                     else
                                     {
-                                        for ( int r = 0;
-                                        r < Convert.ToInt32(
+                                        for ( int r = 1;
+                                        r < Int32.Parse(
                                             command.TrimStart('>').TrimStart(
                                         dictionary.notenames[i].ToCharArray())); r++ )
                                         {

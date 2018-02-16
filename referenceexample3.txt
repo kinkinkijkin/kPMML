@@ -1,0 +1,36 @@
+#nested loops and FM example
+name=laughter
+artist=kinkinkijkin
+10hz
+/env
+e1 AHD 50 500 5000
+e2 AHD 200 2000 40000
+e3 AHD 50 8000 80000
+/wav
+sin SINE 35 0
+saw SAWT 1 0
+/fm
+fm1 FM2O e2 1 0 0 0
+/mu
+
+#FM pattern macros
+
+gatherer ( FN1 GS1 o+1 CN1 o-1 )8
+hunter ( CN1 DS1 FN1 )8
+
+
+#FM patterns
+
+c1 sin e1 ( ( o=3 gatherer hunter )4 )2
+c2 fm1 e2 ( ( o=2 gatherer hunter )4 )2
+
+#SAWT pattern macros
+darnell GS8 GN2 >FN6 o+1 GS4 CN4 o-1
+flavius ( o+1 DS2 CN2 o-1 GS2 )4
+
+
+#SAWT patterns
+
+c3 saw e3 ( darnell flavius )8
+
+END

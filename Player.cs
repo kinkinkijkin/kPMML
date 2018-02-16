@@ -140,12 +140,28 @@ namespace kPMML
                     }
                     else if ( command.Contains("pitchEnv") )
                     {
-                        currentPitchEnv = command.Split(new [] { ' ' })[1];
+                        currentPitchEnv = command.Split(' ')[1];
                     }
                     else if ( command.Contains("octaveSet") )
                     {
-                        channelOctave = Convert.ToInt32(Math.Pow(2, Double.Parse(
-                            command.Split(new [] { ' ' })[1])));
+                        channelOctave = Convert.ToInt32(
+                            Math.Pow(2, 
+                                Double.Parse(
+                                    command.Split(' ')[1])));
+                    }
+                    else if ( command.Contains("octaveInc") )
+                    {
+                        channelOctave = channelOctave * Convert.ToInt32(
+                            Math.Pow(2, 
+                                Double.Parse(
+                                    command.Split(' ')[1])));
+                    }
+                    else if ( command.Contains("octaveDec") )
+                    {
+                        channelOctave = channelOctave / Convert.ToInt32(
+                            Math.Pow(2,
+                                Double.Parse(
+                                    command.Split(' ')[1])));
                     }
                     else if ( command.Contains("pitchVibrato") )
                     {
@@ -154,12 +170,12 @@ namespace kPMML
                     else if ( command.Contains("vibSpeed") )
                     {
                         currentPitchWavPeriod = Single.Parse(
-                            command.Split(new [] { ' ' })[1]);
+                            command.Split(' ')[1]);
                     }
                     else if ( command.Contains("vibAmplitude") )
                     {
                         currentPitchWavAmp = Single.Parse(
-                            command.Split(new [] { ' ' })[1]);
+                            command.Split(' ')[1]);
                     }
                     else if ( command.Contains("retrig") ||
                     command.Contains("noRetrig") )
@@ -273,7 +289,7 @@ namespace kPMML
                 {
                     FileName = "ffmpeg",
                     Arguments = String.Format(
-                        "-f f32le -ac 1 -i - -c:a libmp3lame -b:a 320k '{0}'.mp3",
+                        "-y -f f32le -ac 1 -i - -c:a libmp3lame -b:a 320k '{0}'.mp3",
                         metadata),
                     UseShellExecute = false,
                     CreateNoWindow = true,
