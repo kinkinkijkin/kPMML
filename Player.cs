@@ -144,7 +144,7 @@ namespace kPMML
                     }
                     else if ( command.Contains("octaveSet") )
                     {
-                        channelOctave = Convert.ToInt32(Math.Pow(2, Convert.ToDouble(
+                        channelOctave = Convert.ToInt32(Math.Pow(2, Double.Parse(
                             command.Split(new [] { ' ' })[1])));
                     }
                     else if ( command.Contains("pitchVibrato") )
@@ -153,12 +153,12 @@ namespace kPMML
                     }
                     else if ( command.Contains("vibSpeed") )
                     {
-                        currentPitchWavPeriod = Convert.ToSingle(
+                        currentPitchWavPeriod = Single.Parse(
                             command.Split(new [] { ' ' })[1]);
                     }
                     else if ( command.Contains("vibAmplitude") )
                     {
-                        currentPitchWavAmp = Convert.ToSingle(
+                        currentPitchWavAmp = Single.Parse(
                             command.Split(new [] { ' ' })[1]);
                     }
                     else if ( command.Contains("retrig") ||
@@ -272,7 +272,9 @@ namespace kPMML
                 StartInfo =
                 {
                     FileName = "ffmpeg",
-                    Arguments = "-f f32le -ac 1 -i - -c:a pcm_s16le output.wav",
+                    Arguments = String.Format(
+                        "-f f32le -ac 1 -i - -c:a libmp3lame -b:a 320k '{0}'.mp3",
+                        metadata),
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardInput = true
