@@ -1,11 +1,11 @@
 English
 
 Compiler:
-- Try not to touch the overall architecture without clearance from kinkinkijkin.
+- Raise an issue before touching overall architecture.
 - If using parallelism, try to implement it using the Parallel class, not Thread.
 - Only split lines after 90 chars per line. Lines longer that 90 chars must be split.
 - Modifying the code spec in a way that will make older modules no longer compile
-without explicit permission from kinkinkijkin will not be accepted.
+without raising an issue will not be accepted.
 - Additions to code spec must be in shorthand forms of english, but comments can be in
 english or french.
 - Try to prioritize fixing bugs over adding features.
