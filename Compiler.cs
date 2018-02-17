@@ -130,31 +130,30 @@ namespace kinkaudio
                             loopLength++;
                         }
                     }
-
+                    else if ( command.Contains(")") && loop )
+                    {
+                        loopsOut++;
+                        if ( loopsOut >= q )
+                        {
+                            loop = false;
+                            loops = Int32.Parse(
+                                command.TrimStart(')'));
+                            for ( int g = 0; g < loops; g++)
+                            {
+                                loopTotal.AddRange(loopRange.ToArray());
+                            }
+                            returnValues.InsertRange(loopEndIndex,
+                                loopTotal.ToArray());
+                            loopEndIndex += loopLength * (loops + 1);
+                        }
+                        else { loopLength++; }
+                    }
                     else if ( loop )
                     {
                         loopRange.Add(command);
                         loopLength++;
                     }
 
-                    if ( command.Contains(")") && loop )
-                    {
-                        loopsOut++;
-                        loopRange.Add(command);
-                        if ( loopsOut >= q )
-                        {
-                            loop = false;
-                            loops = Int32.Parse(
-                                command.TrimStart(')'));
-                            for ( int g = 0; g < loops - 1; g++)
-                            {
-                                loopTotal.AddRange(loopRange.ToArray());
-                            }
-                            returnValues.InsertRange(loopEndIndex,
-                                loopTotal.ToArray());
-                            loopEndIndex += loopLength * (loops);
-                        }
-                    }
                     loopEndIndex++;
                 }
             }
@@ -250,8 +249,10 @@ namespace kinkaudio
                                     {
                                         for ( int r = 1;
                                         r < Int32.Parse(
-                                            command.TrimStart('>').TrimStart(
-                                        dictionary.notenames[i].ToCharArray())); r++ )
+                                            command.TrimStart((">" + 
+                                                dictionary.notenames[i])
+                                                    .ToCharArray()));
+                                                        r++ )
                                         {
                                             currentCommand.Add("noRetrig " 
                                             + newCommand);

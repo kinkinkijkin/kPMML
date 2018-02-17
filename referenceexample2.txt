@@ -7,16 +7,18 @@ cornholio AHD 50 50000 500000 0
 bob AHD 50 0 7000 0
 irene AHD 100 5000 50000 0
 /wav
-bass TRIA 35 0
-saw SAWT 2 0
+bass SINE 40 0
+saw SAWT 1 0
 pul PULS 4 300
 /fm
 #FM type carenv mult truncmod trunccar inputchannel
 steven FM2O irene 1 0 0 0
+greg FM20 cornholio 2 1 0 2
 /mu1
 c1 bob bass ( o=3 CS10 FN10 GS10 o=4 CN10 )22
-c2 cornholio saw ( o=1 CS10 FN10 GS10 o=2 CN10 )22
-c3 cornholio pul o=3 ( CS10 FN10 GS10 CN10 DS10 )17
+c2 irene saw ( o=1 CS10 FN10 GS10 o=2 CN10 )22
+c3 irene bass o=3 ( CS10 FN10 GS10 CN10 DS10 )17
 c4 cornholio pul ( o=4 FN10 GS10 o=5 CN10 DN10 CS10 GS10 )14
 c5 irene steven ( o=1 CS10 FN10 GS10 o=2 CN10 )22
+c6 cornholio greg ( o=3 CS10 FN10 GS10 CN10 DS10 )17
 END
