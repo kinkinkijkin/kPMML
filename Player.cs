@@ -107,6 +107,7 @@ namespace kPMML
                 float currentPitchWavAmp = 1;
                 int currentDuty = 200;
                 float currentAmp = 2;
+                float currentAmpOffset = 1;
 
                 int channelOctave = 4;
 
@@ -140,7 +141,7 @@ namespace kPMML
                     }
                     else if ( command.Contains("ampSet") )
                     {
-                        currentAmp = command.Split(' ')[1];
+                        currentAmpOffset = Single.Parse(command.Split(' ')[1]);
                     }
                     else if ( command.Contains("pitchEnv") )
                     {
@@ -205,8 +206,7 @@ namespace kPMML
                             {
                                 if ( currentPitchWav.Contains(wave.wavName) )
                                 {
-                                    pitchShift = pitchShift +
-                                    RenderWav(wave.wavType,
+                                    pitchShift = RenderWav(wave.wavType,
                                     currentPitchWavPeriod,
                                     currentPitchWavAmp + wave.wavValues[0],
                                     Convert.ToInt32(wave.wavValues[1]),
@@ -217,7 +217,8 @@ namespace kPMML
                             {
                                 if ( currentEnv.Contains(env.envName) )
                                 {
-                                    currentAmp = RenderEnv(env.envType, env.envValues[0],
+                                    currentAmp = currentAmpOffset +
+                                    RenderEnv(env.envType, env.envValues[0],
                                     env.envValues[1], env.envValues[2], env.envValues[3],
                                     channelFakeTime) + 1;
                                 }
@@ -245,7 +246,7 @@ namespace kPMML
                                     {
                                         if ( fm.fmEnvName.Equals(env.envName) )
                                         {
-                                            carAmp = currentAmp + RenderEnv(
+                                            carAmp = currentAmpOffset + RenderEnv(
                                                 env.envType, env.envValues[0],
                                                 env.envValues[1], env.envValues[2],
                                                 env.envValues[3], channelFakeTime);
