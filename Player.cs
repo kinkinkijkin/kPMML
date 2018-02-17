@@ -138,6 +138,10 @@ namespace kPMML
                     {
                         currentFM = command.Split(' ')[1];
                     }
+                    else if ( command.Contains("ampSet") )
+                    {
+                        currentAmp = command.Split(' ')[1];
+                    }
                     else if ( command.Contains("pitchEnv") )
                     {
                         currentPitchEnv = command.Split(' ')[1];
@@ -228,8 +232,7 @@ namespace kPMML
                                             * channelOctave) + pitchShift),
                                             currentAmp + wave.wavValues[0], currentDuty,
                                             channelFakeTime);
-                                    currentChannel[i - 1,channelTime] = 
-                                        f / channelCount;
+                                    currentChannel[i - 1,channelTime] = f;
                                         
                                 }
                             }
@@ -242,10 +245,10 @@ namespace kPMML
                                     {
                                         if ( fm.fmEnvName.Equals(env.envName) )
                                         {
-                                            carAmp = RenderEnv(
+                                            carAmp = currentAmp + RenderEnv(
                                                 env.envType, env.envValues[0],
                                                 env.envValues[1], env.envValues[2],
-                                                env.envValues[3], channelFakeTime) + 1;
+                                                env.envValues[3], channelFakeTime);
                                         }
                                     }
                                     float f = RenderFM(currentChannel
@@ -255,8 +258,7 @@ namespace kPMML
                                         * channelOctave
                                         * fm.fmMult)), channelFakeTime, fm.fmTruncMod,
                                         fm.fmTruncCar);
-                                    currentChannel[i - 1,channelTime] =
-                                        f / channelCount;
+                                    currentChannel[i - 1,channelTime] = f;
 
                                 }
                             }
@@ -274,7 +276,7 @@ namespace kPMML
                 {
                     f = f + currentChannel[r,i];
                 }
-                mixedChannels[i] = f;
+                mixedChannels[i] = f / 3;
             }
 
             List<byte> outputBytes = new List<byte>();
