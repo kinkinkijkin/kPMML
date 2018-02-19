@@ -94,7 +94,6 @@ namespace kPMML
                     lengthInFrames = channel.Count;
                 }
             }
-
             float[,] currentChannel = new float[channelCount,lengthInSamples];
 
             for ( int i = 0; i < channelCount + 1; i++ )
@@ -213,7 +212,6 @@ namespace kPMML
                         }
                         for ( int r = 0; r < (samplerate / tickrate); r++)
                         {
-
                             if ( !string.IsNullOrEmpty(currentPitchEnv) ) { 
                                 foreach ( var envelope in Envelops )
                             {
@@ -287,11 +285,11 @@ namespace kPMML
                                         * channelOctave
                                         * fm.fmMult)), channelFakeTime, fm.fmTruncMod,
                                         fm.fmTruncCar);
-                                    currentChannel[i - 1,channelTime] = f / 3;
+                                    currentChannel[i - 1,channelTime] = f;
 
                                 }
                             } }
-                            if ( currentFilterType != -1)
+                            if ( currentFilterType > -1 )
                             {
                                 accumulation++;
                                 if ( accumulation > 1 )
@@ -332,8 +330,8 @@ namespace kPMML
                 {
                     FileName = "ffmpeg",
                     Arguments = String.Format(
-                        "-y -f f32le -ac 1 -i - -c:a libmp3lame -b:a 320k '{0}'.mp3",
-                        metadata),
+                        "-y -f f32le -ac 1 -ar {1} -i - -c:a libmp3lame -b:a 320k '{0}'.mp3",
+                        metadata, samplerate),
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardInput = true

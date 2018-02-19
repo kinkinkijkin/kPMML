@@ -138,7 +138,7 @@ namespace kinkaudio
                             loop = false;
                             loops = Int32.Parse(
                                 command.TrimStart(')'));
-                            for ( int g = 0; g < loops; g++)
+                            for ( int g = 0; g < loops - 1; g++)
                             {
                                 loopTotal.AddRange(loopRange.ToArray());
                             }
@@ -171,6 +171,7 @@ namespace kinkaudio
             List<string[]> arbitraryMacros = new List<string[]>();
             foreach ( var line in inputList )
             {
+                Console.Out.WriteLine(line);
                 List<string> currentCommand = new List<string>();
                 if (!currentBlock)
                 {
@@ -192,7 +193,7 @@ namespace kinkaudio
 
                         newCurrentLine.AddRange(currentLine);
 
-                        if ( currentLine[0].Contains("c") )
+                        if ( currentLine[0].StartsWith("c") )
                         {
                             channel = Int32.Parse(
                                 currentLine[0].TrimStart(new []{ 'c' }));

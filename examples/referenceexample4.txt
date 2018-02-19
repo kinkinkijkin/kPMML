@@ -1,0 +1,63 @@
+name=you square
+artist=kinkinkijkin
+
+75hz
+
+/env
+sqe1 AHD 50 5000 200000
+sqe2 AHD 500 500 500000
+kicktom AHD 50 50 5000
+
+/wav
+sq PULS 5 200
+pl PULS 3 250
+sin SINE 50 0
+
+/fm
+fm1 FM2O kicktom 8 0 0 0
+fmtwo FM20 kicktom 0.5 0 0 2
+
+/mu
+hat ( o=6 CN20 CN10 CN10 CN20 CN20 CN10 CN10 CN20 CN20 CN10 CN10 )2
+kikk o=2 ( CN40 o+1 CN40 o-1 )4
+
+arp1 CN2 >GN3 >AS2 o+1 >DS3 o-1 ( >CN2 >GN3 >AS2 o+1 >DS3 o-1 )52
+arp2 CN2 >GN3 >B2 o+1 >DN3 o-1 ( >CN2 >GN3 >B2 o+1 >DN3 o-1 )52
+
+c1 kicktom sin hat
+c2 fm1 kicktom a=22 HP=4 hat
+c3 kicktom sin a=30 kikk
+c4 kicktom fmtwo a=3 LP=1.5 kikk
+c5 kicktom sq a=3 o=4 LP=3 R20 GN10 GN10 DS20 DS30 o=3 GN230
+
+c6 sqe1 pl LP=2 o=2 CN20 GN10 >AS10 >CN20 GN20 o=3 CN10 o=2 >GN10 >DS20 o=3 DS20 FN20
+c6 DS20 DN10 >DS10 >DN60 CN20 o=2 >AS45
+
+c7 sq sqe2 a=5 o=5 arp1
+
+bassOff o=3 CN20 o=2 CN10 >DN10 >CN20 GN20 DN10 >CN235
+
+c1 hat
+c2 hat
+c3 kicktom sin a=20 kikk
+c4 kicktom fmtwo kikk
+c5 o=4 R20 GN10 GN10 DS20 DS30 o=3 GN230
+c6 bassOff
+c7 o=4 arp2
+
+c1 hat
+c2 hat
+c3 kicktom sin a=20 kikk
+c4 kicktom fmtwo kikk
+c5 o=4 R20 GN10 GN10 DS20 DS30 o=3 GN230
+c6 o=2 CN20 GN10 >AS10 >CN20 o=3 CN20 DS10 >GN10 >AS20 GS20 AS10 o=4 >CN10 >DS80 DN85
+c7 o=5 arp1
+
+c1 hat
+c2 hat
+c3 kicktom sin a=20 kikk
+c4 kicktom fmtwo kikk
+c5 o=4 R20 GN10 GN10 DS20 DS30 o=3 GN230
+c6 bassOff
+c7 o=4 arp2
+END
