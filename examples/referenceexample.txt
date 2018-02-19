@@ -53,11 +53,11 @@ bob FM2O henry 1 0 0 0
 # loops are defined with ( music )x, where x is times to loop.
 
 jesus o=2 CN10 GN15 CN5 DS10 AS15 o=3 DN5
-c1 1 steve jesus
-c2 saw henry o=4 CN420
-c3 saw henry o=4 R1 GN419
-c4 saw henry o=4 R3 AS417
-c5 saw henry o=5 R6 DN414
+c1 1 steve LP=0.5 jesus
+c2 saw henry HP=6 o=4 CN420
+c3 saw henry HP=6 o=4 R1 GN419
+c4 saw henry HP=6 o=4 R3 AS417
+c5 saw henry HP=6 o=5 R6 DN414
 c1 2 steve jesus
 c1 3 steve jesus
 c1 4 steve jesus

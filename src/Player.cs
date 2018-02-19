@@ -1,4 +1,5 @@
 using kinkaudio;
+using kinkaudio.Filters;
 using System;
 using System.IO;
 using System.Threading;
@@ -96,7 +97,7 @@ namespace kPMML
 
             float[,] currentChannel = new float[channelCount,lengthInSamples];
 
-            Parallel.For ( 0, channelCount + 1, i =>
+            for ( int i = 0; i < channelCount + 1; i++ )
             {
                 string currentFM = string.Empty;
                 string currentWav = string.Empty;
@@ -108,11 +109,16 @@ namespace kPMML
                 int currentDuty = 200;
                 float currentAmp = 2;
                 float currentAmpOffset = 1;
+                int currentFilterType = -1;
+                float currentFilterFC = 1;
 
                 int channelOctave = 4;
 
                 int channelTime = 0;
                 int channelFakeTime = 0;
+                int accumulation = 0;
+
+                SVF Filter = new SVF();
 
                 foreach ( var command in musicCommands[i] )
                 {
@@ -182,6 +188,22 @@ namespace kPMML
                         currentPitchWavAmp = Single.Parse(
                             command.Split(' ')[1]);
                     }
+                    else if ( command.Contains("lowpassSet") )
+                    {
+                        currentFilterType = 0;
+                        currentFilterFC = Single.Parse(
+                            command.Split(' ')[1]);
+                    }
+                    else if ( command.Contains("highpassSet") )
+                    {
+                        currentFilterType = 2;
+                        currentFilterFC = Single.Parse(
+                            command.Split(' ')[1]);
+                    }
+                    else if ( command.Contains("filterOff") )
+                    {
+                        currentFilterType = -1;
+                    }
                     else if ( command.Contains("retrig") ||
                     command.Contains("noRetrig") )
                     {
@@ -191,7 +213,9 @@ namespace kPMML
                         }
                         for ( int r = 0; r < (samplerate / tickrate); r++)
                         {
-                            foreach ( var envelope in Envelops )
+
+                            if ( !string.IsNullOrEmpty(currentPitchEnv) ) { 
+                                foreach ( var envelope in Envelops )
                             {
                                 if ( currentPitchEnv.Contains(envelope.envName) )
                                 {
@@ -201,8 +225,9 @@ namespace kPMML
                                     envelope.envValues[2], envelope.envValues[3],
                                     channelFakeTime);
                                 }
-                            }
-                            foreach ( var wave in Wavcomms )
+                            } }
+                            if ( !string.IsNullOrEmpty(currentPitchWav) ) {
+                                foreach ( var wave in Wavcomms )
                             {
                                 if ( currentPitchWav.Contains(wave.wavName) )
                                 {
@@ -212,8 +237,9 @@ namespace kPMML
                                     Convert.ToInt32(wave.wavValues[1]),
                                     channelFakeTime);
                                 }
-                            }
-                            foreach ( var env in Envelops )
+                            } }
+                            if ( !string.IsNullOrEmpty(currentEnv) ) { 
+                                foreach ( var env in Envelops )
                             {
                                 if ( currentEnv.Contains(env.envName) )
                                 {
@@ -222,8 +248,9 @@ namespace kPMML
                                     env.envValues[1], env.envValues[2], env.envValues[3],
                                     channelFakeTime) + 1;
                                 }
-                            }
-                            foreach ( var wave in Wavcomms )
+                            } }
+                            if ( !string.IsNullOrEmpty(currentWav) ) {
+                                foreach ( var wave in Wavcomms )
                             {
                                 if ( currentWav.Contains(wave.wavName) )
                                 {
@@ -236,8 +263,9 @@ namespace kPMML
                                     currentChannel[i - 1,channelTime] = f;
                                         
                                 }
-                            }
-                            foreach ( var fm in FMC )
+                            } }
+                            if ( !string.IsNullOrEmpty(currentFM) ) {
+                                foreach ( var fm in FMC )
                             {
                                 float carAmp = currentAmp;
                                 if ( currentFM.Contains(fm.fmName) )
@@ -259,16 +287,28 @@ namespace kPMML
                                         * channelOctave
                                         * fm.fmMult)), channelFakeTime, fm.fmTruncMod,
                                         fm.fmTruncCar);
-                                    currentChannel[i - 1,channelTime] = f;
+                                    currentChannel[i - 1,channelTime] = f / 3;
 
                                 }
+                            } }
+                            if ( currentFilterType != -1)
+                            {
+                                accumulation++;
+                                if ( accumulation > 1 )
+                                {
+                                    Filter.RemoveIndex(0);
+                                }
+                                currentChannel[i - 1,channelTime] = 
+                                    Filter.Filter(
+                                        currentChannel[i - 1, channelTime], 
+                                            currentFilterFC, currentFilterType);
                             }
                             channelFakeTime++;
                             channelTime++;
                         }
                     }
                 }
-            } );
+            }
             float[] mixedChannels = new float[lengthInSamples];
             for ( int i = 0; i < currentChannel.GetLength(1); i++)
             {
