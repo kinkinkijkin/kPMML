@@ -1,4 +1,4 @@
-# kPMML
+# kPMML [![Build Status](https://travis-ci.org/kinkinkijkin/kPMML.svg?branch=master)](https://travis-ci.org/kinkinkijkin/kPMML)
 
 ## License
 
