@@ -1,4 +1,4 @@
-using kinkaudio;
+﻿using kinkaudio;
 using kinkaudio.Filters;
 using System;
 using System.IO;
@@ -13,50 +13,50 @@ namespace kPMML
 {
     public class kPMML
     {
-        static float RenderEnv ( string envType, float atk, float hld, float dcy,
-        float sus, int time )
+        static float RenderEnv(string envType, float atk, float hld, float dcy,
+        float sus, int time)
         {
-            if ( envType.Equals("AHD") )
+            if (envType.Equals("AHD"))
             {
                 return Envelopes.AHD(atk, hld, dcy, time);
             }
-            else if ( envType.Equals("AHDS") )
+            else if (envType.Equals("AHDS"))
             {
                 return Envelopes.AHDS(atk, hld, dcy, sus, time);
             }
             else return 1f;
         }
-        static float RenderWav ( string wavType, float per, float amp, int duty, 
-        int time )
+        static float RenderWav(string wavType, float per, float amp, int duty,
+        int time)
         {
-            if ( wavType.Equals("SAWT") )
+            if (wavType.Equals("SAWT"))
             {
                 return Generators.GenSawtooth(time, amp, per);
             }
-            else if ( wavType.Equals("PULS") )
+            else if (wavType.Equals("PULS"))
             {
                 return Generators.GenPulse(time, amp, per, duty);
             }
-            else if ( wavType.Equals("TRIA") )
+            else if (wavType.Equals("TRIA"))
             {
                 return Generators.GenTriangle(time, amp, per);
             }
-            else if ( wavType.Equals("PCYC") )
+            else if (wavType.Equals("PCYC"))
             {
                 return Generators.GenPCycloid(time, amp, per);
             }
-            else if ( wavType.Equals("SINE") )
+            else if (wavType.Equals("SINE"))
             {
                 return Generators.GenSin(time, amp, per);
             }
             else return 0.1f;
         }
-        static float RenderFM ( float inOp, float amp, float mult, int time, int trm,
-        int trc )
+        static float RenderFM(float inOp, float amp, float mult, int time, int trm,
+        int trc)
         {
             return FM.FM2opMergeTrunc(inOp, amp, mult, time, trm, trc);
         }
-        static int Main (string[] args)
+        static int Main(string[] args)
         {
             if (args.Length < 2)
             {
@@ -73,7 +73,7 @@ namespace kPMML
             out var musicCommands, out string metadata, out int tickrate);
 
             int samplerate = Int32.Parse(args[1]);
-            if ( samplerate % tickrate != 0 )
+            if (samplerate % tickrate != 0)
             {
                 Console.WriteLine("BAD SAMPLERATE FOR THAT TICKRATE, BAKA");
                 return 1;
@@ -86,17 +86,17 @@ namespace kPMML
             long lengthInSamples = 0;
             int lengthInFrames = 0;
 
-            foreach ( var channel in musicCommands )
+            foreach (var channel in musicCommands)
             {
-                if ( channel.Count > lengthInFrames )
+                if (channel.Count > lengthInFrames)
                 {
                     lengthInSamples = (samplerate / tickrate) * channel.Count;
                     lengthInFrames = channel.Count;
                 }
             }
-            float[,] currentChannel = new float[channelCount,lengthInSamples];
+            float[,] currentChannel = new float[channelCount, lengthInSamples];
 
-            for ( int i = 0; i < channelCount + 1; i++ )
+            for (int i = 0; i < channelCount + 1; i++)
             {
                 string currentFM = string.Empty;
                 string currentWav = string.Empty;
@@ -119,20 +119,20 @@ namespace kPMML
 
                 SVF Filter = new SVF();
 
-                foreach ( var command in musicCommands[i] )
+                foreach (var command in musicCommands[i])
                 {
                     float pitchShift = 1f;
-                    if ( command.Contains("envSet") )
+                    if (command.Contains("envSet"))
                     {
                         currentEnv = command.Split(' ')[1];
                     }
-                    else if ( command.Contains("wavSet") )
+                    else if (command.Contains("wavSet"))
                     {
                         currentWav = command.Split(' ')[1];
-                        foreach ( var wave in Wavcomms )
+                        foreach (var wave in Wavcomms)
                         {
-                            if ( !currentWav.Equals(wave.wavName) )
-                            {}
+                            if (!currentWav.Equals(wave.wavName))
+                            { }
                             else
                             {
                                 currentDuty = Convert.ToInt32(wave.wavValues[1]);
@@ -140,165 +140,175 @@ namespace kPMML
                             }
                         }
                     }
-                    else if ( command.Contains("fmSet") )
+                    else if (command.Contains("fmSet"))
                     {
                         currentFM = command.Split(' ')[1];
                     }
-                    else if ( command.Contains("ampSet") )
+                    else if (command.Contains("ampSet"))
                     {
                         currentAmpOffset = Single.Parse(command.Split(' ')[1]);
                     }
-                    else if ( command.Contains("pitchEnv") )
+                    else if (command.Contains("pitchEnv"))
                     {
                         currentPitchEnv = command.Split(' ')[1];
                     }
-                    else if ( command.Contains("octaveSet") )
+                    else if (command.Contains("octaveSet"))
                     {
                         channelOctave = Convert.ToInt32(
-                            Math.Pow(2, 
+                            Math.Pow(2,
                                 Double.Parse(
                                     command.Split(' ')[1])));
                     }
-                    else if ( command.Contains("octaveInc") )
+                    else if (command.Contains("octaveInc"))
                     {
                         channelOctave = channelOctave * Convert.ToInt32(
-                            Math.Pow(2, 
+                            Math.Pow(2,
                                 Double.Parse(
                                     command.Split(' ')[1])));
                     }
-                    else if ( command.Contains("octaveDec") )
+                    else if (command.Contains("octaveDec"))
                     {
                         channelOctave = channelOctave / Convert.ToInt32(
                             Math.Pow(2,
                                 Double.Parse(
                                     command.Split(' ')[1])));
                     }
-                    else if ( command.Contains("pitchVibrato") )
+                    else if (command.Contains("pitchVibrato"))
                     {
-                        currentPitchWav = command.Split(new [] { ' ' })[1];
+                        currentPitchWav = command.Split(new[] { ' ' })[1];
                     }
-                    else if ( command.Contains("vibSpeed") )
+                    else if (command.Contains("vibSpeed"))
                     {
                         currentPitchWavPeriod = Single.Parse(
                             command.Split(' ')[1]);
                     }
-                    else if ( command.Contains("vibAmplitude") )
+                    else if (command.Contains("vibAmplitude"))
                     {
                         currentPitchWavAmp = Single.Parse(
                             command.Split(' ')[1]);
                     }
-                    else if ( command.Contains("lowpassSet") )
+                    else if (command.Contains("lowpassSet"))
                     {
                         currentFilterType = 0;
                         currentFilterFC = Single.Parse(
                             command.Split(' ')[1]);
                     }
-                    else if ( command.Contains("highpassSet") )
+                    else if (command.Contains("highpassSet"))
                     {
                         currentFilterType = 2;
                         currentFilterFC = Single.Parse(
                             command.Split(' ')[1]);
                     }
-                    else if ( command.Contains("filterOff") )
+                    else if (command.Contains("filterOff"))
                     {
                         currentFilterType = -1;
                     }
-                    else if ( command.Contains("retrig") ||
-                    command.Contains("noRetrig") )
+                    else if (command.Contains("retrig") ||
+                    command.Contains("noRetrig"))
                     {
-                        if ( command.Contains("retrig") )
+                        if (command.Contains("retrig"))
                         {
                             channelFakeTime = 0;
                         }
-                        for ( int r = 0; r < (samplerate / tickrate); r++)
+                        for (int r = 0; r < (samplerate / tickrate); r++)
                         {
-                            if ( !string.IsNullOrEmpty(currentPitchEnv) ) { 
-                                foreach ( var envelope in Envelops )
+                            if (!string.IsNullOrEmpty(currentPitchEnv))
                             {
-                                if ( currentPitchEnv.Contains(envelope.envName) )
+                                foreach (var envelope in Envelops)
                                 {
-                                    pitchShift = pitchShift + 
-                                    RenderEnv(envelope.envType, 
-                                    envelope.envValues[0], envelope.envValues[1],
-                                    envelope.envValues[2], envelope.envValues[3],
-                                    channelFakeTime);
-                                }
-                            } }
-                            if ( !string.IsNullOrEmpty(currentPitchWav) ) {
-                                foreach ( var wave in Wavcomms )
-                            {
-                                if ( currentPitchWav.Contains(wave.wavName) )
-                                {
-                                    pitchShift = RenderWav(wave.wavType,
-                                    currentPitchWavPeriod,
-                                    currentPitchWavAmp + wave.wavValues[0],
-                                    Convert.ToInt32(wave.wavValues[1]),
-                                    channelFakeTime);
-                                }
-                            } }
-                            if ( !string.IsNullOrEmpty(currentEnv) ) { 
-                                foreach ( var env in Envelops )
-                            {
-                                if ( currentEnv.Contains(env.envName) )
-                                {
-                                    currentAmp = currentAmpOffset +
-                                    RenderEnv(env.envType, env.envValues[0],
-                                    env.envValues[1], env.envValues[2], env.envValues[3],
-                                    channelFakeTime) + 1;
-                                }
-                            } }
-                            if ( !string.IsNullOrEmpty(currentWav) ) {
-                                foreach ( var wave in Wavcomms )
-                            {
-                                if ( currentWav.Contains(wave.wavName) )
-                                {
-                                    float f = RenderWav(wave.wavType,
-                                        (Convert.ToSingle(samplerate) / (Single.Parse(
-                                            command.Split(' ')[1])
-                                            * channelOctave) + pitchShift),
-                                            currentAmp + wave.wavValues[0], currentDuty,
-                                            channelFakeTime);
-                                    currentChannel[i - 1,channelTime] = f;
-                                        
-                                }
-                            } }
-                            if ( !string.IsNullOrEmpty(currentFM) ) {
-                                foreach ( var fm in FMC )
-                            {
-                                float carAmp = currentAmp;
-                                if ( currentFM.Contains(fm.fmName) )
-                                {
-                                    foreach ( var env in Envelops )
+                                    if (currentPitchEnv.Contains(envelope.envName))
                                     {
-                                        if ( fm.fmEnvName.Equals(env.envName) )
-                                        {
-                                            carAmp = currentAmpOffset + RenderEnv(
-                                                env.envType, env.envValues[0],
-                                                env.envValues[1], env.envValues[2],
-                                                env.envValues[3], channelFakeTime);
-                                        }
+                                        pitchShift = pitchShift +
+                                        RenderEnv(envelope.envType,
+                                        envelope.envValues[0], envelope.envValues[1],
+                                        envelope.envValues[2], envelope.envValues[3],
+                                        channelFakeTime);
                                     }
-                                    float f = RenderFM(currentChannel
-                                    [fm.fmInputChannel,channelTime],
-                                        carAmp, (Convert.ToSingle(samplerate) / (
-                                        Single.Parse(command.Split(' ')[1])
-                                        * channelOctave
-                                        * fm.fmMult)), channelFakeTime, fm.fmTruncMod,
-                                        fm.fmTruncCar);
-                                    currentChannel[i - 1,channelTime] = f;
-
                                 }
-                            } }
-                            if ( currentFilterType > -1 )
+                            }
+                            if (!string.IsNullOrEmpty(currentPitchWav))
+                            {
+                                foreach (var wave in Wavcomms)
+                                {
+                                    if (currentPitchWav.Contains(wave.wavName))
+                                    {
+                                        pitchShift = RenderWav(wave.wavType,
+                                        currentPitchWavPeriod,
+                                        currentPitchWavAmp + wave.wavValues[0],
+                                        Convert.ToInt32(wave.wavValues[1]),
+                                        channelFakeTime);
+                                    }
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(currentEnv))
+                            {
+                                foreach (var env in Envelops)
+                                {
+                                    if (currentEnv.Contains(env.envName))
+                                    {
+                                        currentAmp = currentAmpOffset +
+                                        RenderEnv(env.envType, env.envValues[0],
+                                        env.envValues[1], env.envValues[2], env.envValues[3],
+                                        channelFakeTime) + 1;
+                                    }
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(currentWav))
+                            {
+                                foreach (var wave in Wavcomms)
+                                {
+                                    if (currentWav.Contains(wave.wavName))
+                                    {
+                                        float f = RenderWav(wave.wavType,
+                                            (Convert.ToSingle(samplerate) / (Single.Parse(
+                                                command.Split(' ')[1])
+                                                * channelOctave) + pitchShift),
+                                                currentAmp + wave.wavValues[0], currentDuty,
+                                                channelFakeTime);
+                                        currentChannel[i - 1, channelTime] = f;
+
+                                    }
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(currentFM))
+                            {
+                                foreach (var fm in FMC)
+                                {
+                                    float carAmp = currentAmp;
+                                    if (currentFM.Contains(fm.fmName))
+                                    {
+                                        foreach (var env in Envelops)
+                                        {
+                                            if (fm.fmEnvName.Equals(env.envName))
+                                            {
+                                                carAmp = currentAmpOffset + RenderEnv(
+                                                    env.envType, env.envValues[0],
+                                                    env.envValues[1], env.envValues[2],
+                                                    env.envValues[3], channelFakeTime);
+                                            }
+                                        }
+                                        float f = RenderFM(currentChannel
+                                        [fm.fmInputChannel, channelTime],
+                                            carAmp, (Convert.ToSingle(samplerate) / (
+                                            Single.Parse(command.Split(' ')[1])
+                                            * channelOctave
+                                            * fm.fmMult)), channelFakeTime, fm.fmTruncMod,
+                                            fm.fmTruncCar);
+                                        currentChannel[i - 1, channelTime] = f;
+
+                                    }
+                                }
+                            }
+                            if (currentFilterType > -1)
                             {
                                 accumulation++;
-                                if ( accumulation > 1 )
+                                if (accumulation > 1)
                                 {
                                     Filter.RemoveIndex(0);
                                 }
-                                currentChannel[i - 1,channelTime] = 
+                                currentChannel[i - 1, channelTime] =
                                     Filter.Filter(
-                                        currentChannel[i - 1, channelTime], 
+                                        currentChannel[i - 1, channelTime],
                                             currentFilterFC, currentFilterType);
                             }
                             channelFakeTime++;
@@ -308,18 +318,18 @@ namespace kPMML
                 }
             }
             float[] mixedChannels = new float[lengthInSamples];
-            for ( int i = 0; i < currentChannel.GetLength(1); i++)
+            for (int i = 0; i < currentChannel.GetLength(1); i++)
             {
                 float f = 0f;
-                for ( int r = 0; r < currentChannel.GetLength(0); r++)
+                for (int r = 0; r < currentChannel.GetLength(0); r++)
                 {
-                    f = f + currentChannel[r,i];
+                    f = f + currentChannel[r, i];
                 }
                 mixedChannels[i] = f / 3;
             }
 
             List<byte> outputBytes = new List<byte>();
-            foreach ( var sample in mixedChannels )
+            foreach (var sample in mixedChannels)
             {
                 outputBytes.AddRange(BitConverter.GetBytes(sample));
             }
@@ -343,7 +353,7 @@ namespace kPMML
             var ffmpegIn = ffmpeg.StandardInput.BaseStream;
 
             ffmpegIn.Write(outputBytes.ToArray(), 0, outputBytes.Count);
-            
+
             ffmpegIn.Flush();
             ffmpegIn.Close();
 

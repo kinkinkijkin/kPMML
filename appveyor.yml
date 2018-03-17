@@ -1,0 +1,10 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+configuration: Release
+build:
+  project: src/kPMML.sln
+  verbosity: minimal
+artifacts:
+  - path: src\kPMML\bin\Release\kPMML.exe
+    name: kPMML
+    type: zip
