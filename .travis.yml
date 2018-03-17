@@ -1,0 +1,3 @@
+language: csharp
+
+script: mcs -out:kPMML.exe -pkg:dotnet -t:exe src/*.cs src/*/*.cs
