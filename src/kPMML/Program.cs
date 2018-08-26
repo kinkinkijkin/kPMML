@@ -16,9 +16,9 @@ namespace kPMML
         static float RenderEnv(string envType, float atk, float hld, float dcy,
         float sus, int time)
         {
-            if (envType.Equals("AHD"))
+            if (envType == "AHD")
                 return Envelopes.AHD(atk, hld, dcy, time);
-            else if (envType.Equals("AHDS"))
+            else if (envType == "AHDS")
                 return Envelopes.AHDS(atk, hld, dcy, sus, time);
             else
                 return 1f;
@@ -26,15 +26,15 @@ namespace kPMML
         static float RenderWav(string wavType, float per, float amp, int duty,
         int time)
         {
-            if (wavType.Equals("SAWT"))
+            if (wavType == "SAWT")
                 return Generators.GenSawtooth(time, amp, per);
-            else if (wavType.Equals("PULS"))
+            else if (wavType == "PULS")
                 return Generators.GenPulse(time, amp, per, duty);
-            else if (wavType.Equals("TRIA"))
+            else if (wavType == "TRIA")
                 return Generators.GenTriangle(time, amp, per);
-            else if (wavType.Equals("PCYC"))
+            else if (wavType == "PCYC")
                 return Generators.GenPCycloid(time, amp, per);
-            else if (wavType.Equals("SINE"))
+            else if (wavType == "SINE")
                 return Generators.GenSin(time, amp, per);
             else
                 return 0.1f;
