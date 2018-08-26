@@ -17,39 +17,27 @@ namespace kPMML
         float sus, int time)
         {
             if (envType.Equals("AHD"))
-            {
                 return Envelopes.AHD(atk, hld, dcy, time);
-            }
             else if (envType.Equals("AHDS"))
-            {
                 return Envelopes.AHDS(atk, hld, dcy, sus, time);
-            }
-            else return 1f;
+            else
+                return 1f;
         }
         static float RenderWav(string wavType, float per, float amp, int duty,
         int time)
         {
             if (wavType.Equals("SAWT"))
-            {
                 return Generators.GenSawtooth(time, amp, per);
-            }
             else if (wavType.Equals("PULS"))
-            {
                 return Generators.GenPulse(time, amp, per, duty);
-            }
             else if (wavType.Equals("TRIA"))
-            {
                 return Generators.GenTriangle(time, amp, per);
-            }
             else if (wavType.Equals("PCYC"))
-            {
                 return Generators.GenPCycloid(time, amp, per);
-            }
             else if (wavType.Equals("SINE"))
-            {
                 return Generators.GenSin(time, amp, per);
-            }
-            else return 0.1f;
+            else
+                return 0.1f;
         }
         static float RenderFM(float inOp, float amp, float mult, int time, int trm,
         int trc)
